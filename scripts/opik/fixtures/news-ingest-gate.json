@@ -1,0 +1,59 @@
+[
+	{
+		"id": "fixture-artemis-press",
+		"kind": "rss",
+		"region": "usa",
+		"sourceLabel": "NASA",
+		"url": "https://www.nasa.gov/news-release/example-artemis/",
+		"titleOriginal": "NASA announces Artemis progress update",
+		"summaryOriginal": "NASA released an official update on Artemis mission milestones.",
+		"titleJa": "NASAがアルテミス進捗を発表",
+		"summaryJa": "NASAがアルテミス計画の公式進捗を発表した。",
+		"expect": {
+			"ingestAsSource": true,
+			"projectSlugsSubsetOfCatalog": true,
+			"preferredProjectsAnyOf": ["artemis"]
+		},
+		"assertions": [
+			"ingestAsSource should be true for an official NASA Artemis announcement",
+			"projectSlugs must only use catalog slugs and should include artemis when clearly about Artemis"
+		]
+	},
+	{
+		"id": "fixture-empty-stub",
+		"kind": "html-list",
+		"region": "japan",
+		"sourceLabel": "JAXA",
+		"url": "https://www.jaxa.jp/",
+		"titleOriginal": "Home",
+		"summaryOriginal": "",
+		"titleJa": "ホーム",
+		"summaryJa": "",
+		"expect": {
+			"ingestAsSource": false,
+			"projectSlugsSubsetOfCatalog": true
+		},
+		"assertions": [
+			"ingestAsSource must be false for empty stubs or hub pages without news content"
+		]
+	},
+	{
+		"id": "fixture-opinion-noise",
+		"kind": "x",
+		"region": "usa",
+		"sourceLabel": "NASA",
+		"accountHandle": "NASA",
+		"url": "https://x.com/NASA/status/1",
+		"titleOriginal": "What an amazing sunset! Feeling grateful today.",
+		"summaryOriginal": "What an amazing sunset! Feeling grateful today.",
+		"titleJa": "素晴らしい夕焼け。今日は感謝の気持ち。",
+		"summaryJa": "素晴らしい夕焼け。今日は感謝の気持ち。",
+		"expect": {
+			"ingestAsSource": false,
+			"projectSlugsSubsetOfCatalog": true
+		},
+		"assertions": [
+			"ingestAsSource must be false for non-news opinion or vibe posts"
+		]
+	}
+]

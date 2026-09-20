@@ -11,4 +11,7 @@ export interface Env {
 	DEEPL_API_KEY?: string;
 	CF_AI_MODEL?: string;
 	RUN_SECRET?: string;
+	OPIK_API_KEY?: string;
+	OPIK_WORKSPACE?: string;
+	OPIK_PROJECT_NAME?: string;
 }

@@ -14,5 +14,6 @@ Use these terms in code comments, specs, commits, and UI copy. Prefer the Englis
 | **Corpus** | コーパス | Ingested official chunks for retrieval (timeline RAG). |
 | **Timeline** | 時系列 | Chronological mix of events for one project. |
 | **Unassigned** | 未分類 | News that could not be tagged to a catalog project. |
+| **Ingest gate** | 取り込みゲート | LLM decision that news is news-like and trustworthy enough for RAG evidence. |
 
 Do not use “article brief” for LLM news essays—the product has **proposals**, not auto-written news articles.
