@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { NewsFile } from '../src/utils/news-types.ts';
+import type { NewsFile, NewsItem } from '../src/utils/news-types.ts';
 import { mergeByUrl } from './lib.ts';
 import { fetchFeeds } from './fetch-feeds.ts';
 import { fetchX } from './fetch-x.ts';
@@ -9,6 +9,26 @@ import { translateToJa } from './translate.ts';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const NEWS_PATH = path.join(ROOT, 'src/data/news.json');
+
+/** Drop stale HTML-list noise kept by merge (nav hubs, mega titles). */
+function isQualityItem(item: NewsItem): boolean {
+	const title = item.titleOriginal.replace(/\s+/g, ' ').trim();
+	if (title.length < 8 || title.length > 100) return false;
+	if (item.kind !== 'html-list') return true;
+	if (item.region === 'china') {
+		try {
+			const u = new URL(item.url);
+			const article =
+				/content\.html?$/i.test(u.pathname) ||
+				/\/c\d+\//.test(u.pathname) ||
+				/\/t\d{8,}/i.test(u.pathname);
+			if (!article || /\/(kpjy|dmt|hdjl)\//i.test(u.pathname)) return false;
+		} catch {
+			return false;
+		}
+	}
+	return true;
+}
 
 function loadNews(): NewsFile {
 	if (!fs.existsSync(NEWS_PATH)) {
@@ -56,7 +76,9 @@ async function main() {
 	let merged: NewsFile = {
 		updatedAt: new Date().toISOString(),
 		xConfigured: xResult.configured,
-		items: mergeByUrl(existing.items, [...feedItems, ...xResult.items]).slice(0, 200),
+		items: mergeByUrl(existing.items, [...feedItems, ...xResult.items])
+			.filter(isQualityItem)
+			.slice(0, 200),
 	};
 	merged = await ensureJa(merged);
 	fs.mkdirSync(path.dirname(NEWS_PATH), { recursive: true });

@@ -84,10 +84,15 @@ async function parseHtmlList(
 	const re = /<a[^>]+href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi;
 	let m: RegExpExecArray | null;
 	const seen = new Set<string>();
+	const feedOrigin = new URL(feed.url).origin;
+
 	while ((m = re.exec(html)) && out.length < 40) {
 		let href = m[1]!;
-		const title = m[2]!.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
-		if (!title || title.length < 4) continue;
+		let title = m[2]!.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+		// List scrapers often wrap whole blocks; keep a headline-sized string
+		title = title.split(/(?=\d{4}[-/.年]\d{1,2})/)[0]?.trim() || title;
+		if (title.length > 80) title = `${title.slice(0, 79).replace(/\s+\S*$/, '').trim()}…`;
+		if (title.length < 8) continue;
 		try {
 			href = new URL(href, feed.url).toString();
 		} catch {
@@ -95,24 +100,30 @@ async function parseHtmlList(
 		}
 		if (seen.has(href)) continue;
 		seen.add(href);
-		if (!matchesKeywords(`${title}`, NEWS_KEYWORDS) && feed.region !== 'spacex') {
-			// Agency list pages: keep same-site press/news links even without keywords
-			if (feed.region === 'japan' && href.includes('jaxa.jp') && /press|topics|news/i.test(href)) {
-				// keep
-			} else if (feed.region === 'russia' && href.includes('roscosmos.ru')) {
-				// keep
-			} else if (feed.region === 'china' && (href.includes('cmse.gov.cn') || href.includes('cnsa.gov.cn'))) {
-				// keep
-			} else if (!href.includes('spacex.com') || title.length < 8) {
-				if (!matchesKeywords(`${title}`, NEWS_KEYWORDS)) continue;
+		if (href === feed.url || href === `${feed.url.replace(/\/$/, '')}/`) continue;
+		try {
+			const u = new URL(href);
+			if (u.origin !== feedOrigin && feed.region !== 'spacex') continue;
+			if (feed.region === 'china') {
+				const article =
+					/content\.html?$/i.test(u.pathname) ||
+					/\/c\d+\//.test(u.pathname) ||
+					/\/t\d{8,}/i.test(u.pathname);
+				if (!article || /\/(kpjy|dmt|hdjl)\//i.test(u.pathname)) continue;
 			}
-		} else if (!matchesKeywords(`${title}`, NEWS_KEYWORDS)) {
-			if (feed.region === 'spacex') {
-				if (!href.includes('spacex.com') || title.length < 8) continue;
-			} else {
-				continue;
-			}
+		} catch {
+			continue;
 		}
+
+		const keywordOk = matchesKeywords(title, NEWS_KEYWORDS);
+		let keep = keywordOk;
+		if (!keep) {
+			if (feed.region === 'japan' && /jaxa\.jp/i.test(href) && /press|topics|news/i.test(href)) keep = true;
+			else if (feed.region === 'russia' && /roscosmos\.ru/i.test(href) && /\/\d{4,}\/?$/.test(href)) keep = true;
+			else if (feed.region === 'spacex' && /spacex\.com/i.test(href)) keep = true;
+		}
+		if (!keep) continue;
+
 		out.push({
 			id: hashId(href),
 			url: href,

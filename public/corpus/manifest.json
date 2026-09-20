@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-09-20T18:04:41.434Z",
+  "generatedAt": "2026-09-20T18:13:21.563Z",
   "schemaVersion": 1,
-  "chunkCount": 113,
+  "chunkCount": 108,
   "wikiCount": 50,
-  "newsCount": 63,
+  "newsCount": 58,
   "files": [
     "chunks.jsonl",
     "wiki.jsonl",

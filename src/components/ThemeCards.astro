@@ -8,14 +8,13 @@ const themes = [
 ];
 ---
 
-<div class="my-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+<div class="folder-grid">
 	{
 		themes.map((t) => (
-			<a href={t.href} class="no-underline">
-				<div class="h-full rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm transition-colors hover:border-primary">
-					<p class="text-base font-semibold">{t.title}</p>
-					<p class="mt-1 text-sm text-muted-foreground">{t.desc}</p>
-				</div>
+			<a href={t.href}>
+				<strong>{t.title}</strong>
+				<br />
+				<span class="mt-hint">{t.desc}</span>
 			</a>
 		))
 	}
