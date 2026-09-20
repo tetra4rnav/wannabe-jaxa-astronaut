@@ -2,8 +2,9 @@ import type { Env } from './env.ts';
 import { FactCheckWorkflow } from './workflows/fact-check.ts';
 import { FetchNewsWorkflow } from './workflows/fetch-news.ts';
 import { IngestCorpusWorkflow } from './workflows/ingest-corpus.ts';
+import { ProposeWikiWorkflow } from './workflows/propose-wiki.ts';
 
-export { FetchNewsWorkflow, FactCheckWorkflow, IngestCorpusWorkflow };
+export { FetchNewsWorkflow, FactCheckWorkflow, IngestCorpusWorkflow, ProposeWikiWorkflow };
 
 function unauthorized(): Response {
 	return new Response('Unauthorized', { status: 401 });
@@ -19,7 +20,10 @@ export default {
 		if (request.method === 'POST' && url.pathname === '/run') {
 			const secret = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '');
 			if (!env.RUN_SECRET || secret !== env.RUN_SECRET) return unauthorized();
-			const body = (await request.json().catch(() => ({}))) as { job?: string };
+			const body = (await request.json().catch(() => ({}))) as {
+				job?: string;
+				newsIds?: string[];
+			};
 			const job = body.job ?? url.searchParams.get('job') ?? 'fetch-news';
 			if (job === 'fetch-news') {
 				const instance = await env.FETCH_NEWS.create();
@@ -33,6 +37,12 @@ export default {
 				const instance = await env.INGEST_CORPUS.create();
 				return Response.json({ ok: true, job, id: instance.id });
 			}
+			if (job === 'propose-wiki') {
+				const instance = await env.PROPOSE_WIKI.create({
+					params: { newsIds: body.newsIds },
+				});
+				return Response.json({ ok: true, job, id: instance.id });
+			}
 			return Response.json({ ok: false, error: 'unknown job' }, { status: 400 });
 		}
 
@@ -40,7 +50,7 @@ export default {
 			return Response.json({
 				ok: true,
 				service: 'wannabe-jaxa-jobs',
-				jobs: ['fetch-news', 'fact-check', 'ingest-corpus'],
+				jobs: ['fetch-news', 'fact-check', 'ingest-corpus', 'propose-wiki'],
 			});
 		}
 

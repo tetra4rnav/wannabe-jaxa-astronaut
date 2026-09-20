@@ -73,13 +73,19 @@ export function NewsCards({ items, showAll = false }: Props) {
 								<p className="text-sm text-muted-foreground">{item.summaryJa}</p>
 							</div>
 						</div>
-						<p className="mt-4">
+						<p className="mt-4 flex flex-wrap gap-4">
 							<a
 								className="text-sm text-primary underline-offset-4 hover:underline"
 								href={item.url}
 								rel="noopener noreferrer"
 							>
 								原文・公式リンク
+							</a>
+							<a
+								className="text-sm text-primary underline-offset-4 hover:underline"
+								href={`/proposals/?news=${encodeURIComponent(item.id)}`}
+							>
+								Wiki 提案
 							</a>
 						</p>
 					</CardContent>

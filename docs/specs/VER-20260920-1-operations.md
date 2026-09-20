@@ -38,7 +38,7 @@ Emergency: `npx wrangler pages deploy ./dist --project-name=wannabe-jaxa-astrona
 
 Do **not** enable Bot Fight Mode or AI crawler blocking; [`public/robots.txt`](../../public/robots.txt) is allow-all.
 
-Pages Functions (`functions/`) serve live `/news.json`, `/news.md`, and `/fact-checks/:id.json` from KV binding `STORE`. Project timelines use D1 binding `DB` via `/projects/catalog.json` and `/projects/:slug/timeline.json`. When KV is empty, news falls back to GitHub raw `src/data/news.json`.
+Pages Functions (`functions/`) serve live `/news.json`, `/news.md`, `/fact-checks/:id.json`, and `/proposals.json` (plus `/proposals/:id.json`) from KV binding `STORE`. Project timelines use D1 binding `DB` via `/projects/catalog.json` and `/projects/:slug/timeline.json`. When KV is empty, news falls back to GitHub raw `src/data/news.json`.
 
 Bind on the Pages project: KV `STORE` → `wannabe-jaxa-store`, D1 `DB` → `wannabe-jaxa-db`.
 
@@ -49,10 +49,10 @@ Bind on the Pages project: KV `STORE` → `wannabe-jaxa-store`, D1 `DB` → `wan
 | Config | [`worker/wrangler.jsonc`](../../worker/wrangler.jsonc) |
 | Name | `wannabe-jaxa-jobs` |
 | Deploy | `npm run deploy:jobs` |
-| Manual run | `POST /run` with `Authorization: Bearer $RUN_SECRET` and JSON `{"job":"fetch-news"|"fact-check"|"ingest-corpus"}` |
+| Manual run | `POST /run` with `Authorization: Bearer $RUN_SECRET` and JSON `{"job":"fetch-news"|"fact-check"|"ingest-corpus"|"propose-wiki"}` |
 | D1 migrate | `npx wrangler d1 migrations apply wannabe-jaxa-db --remote -c worker/wrangler.jsonc` |
 
-Shared pipeline: [`shared/news/`](../../shared/news/) (no filesystem). Timeline ingest: [`shared/timeline/`](../../shared/timeline/). LLM judgments: [`shared/opik/`](../../shared/opik/) + [`shared/timeline/llm-classify-news.ts`](../../shared/timeline/llm-classify-news.ts). Production news / fact-check JSON live in KV (`news:file`, `news:md`, `fact-check:{docsId}`). D1 holds projects / documents / events; R2 `wannabe-jaxa-chunks` + Vectorize `wannabe-jaxa-vectors` hold embeddings. FetchNews uses Workers AI for project tags + ingest gate (batch of unclassified items per run).
+Shared pipeline: [`shared/news/`](../../shared/news/) (no filesystem). Timeline ingest / retrieve: [`shared/timeline/`](../../shared/timeline/). Wiki proposals: [`shared/proposals/`](../../shared/proposals/). LLM judgments: [`shared/opik/`](../../shared/opik/). Production news / fact-check / proposals JSON live in KV (`news:file`, `news:md`, `fact-check:{docsId}`, `proposals:file`). D1 holds projects / documents / events; R2 `wannabe-jaxa-chunks` + Vectorize `wannabe-jaxa-vectors` hold embeddings. FetchNews uses Workers AI for project tags + ingest gate, then enqueues ProposeWiki for newly classified items.
 
 ## Secrets & env
 
@@ -72,7 +72,7 @@ Shared pipeline: [`shared/news/`](../../shared/news/) (no filesystem). Timeline 
 | --- | --- |
 | `X_BEARER_TOKEN` | FetchNews X API |
 | `DEEPL_API_KEY` | Optional translation |
-| `CF_AI_MODEL` | Optional Workers AI model override (FetchNews gate + FactCheck) |
+| `CF_AI_MODEL` | Optional Workers AI model override (FetchNews gate + FactCheck + ProposeWiki) |
 | `RUN_SECRET` | Bearer token for `POST /run` |
 | `OPIK_API_KEY` | Opik Cloud API key (`authorization` header, no `Bearer ` prefix). **Required in production.** |
 | `OPIK_WORKSPACE` | Opik / Comet workspace name (`Comet-Workspace` header). **Required in production.** |
@@ -84,8 +84,8 @@ Workers AI uses the `AI` binding (no account REST token required on the Worker).
 
 | Layer | How |
 | --- | --- |
-| Production traces | Every judgment via `runJudgment` → Opik REST traces/spans; tags `judgment:news-ingest-gate`, `judgment:fact-check` |
-| Structural scores | Feedback scores `json_valid`, `schema_ok`, `slugs_in_catalog` / `verdict_enum_ok` |
+| Production traces | Every judgment via `runJudgment` → Opik REST traces/spans; tags `judgment:news-ingest-gate`, `judgment:fact-check`, `judgment:propose-wiki` |
+| Structural scores | Feedback scores `json_valid`, `schema_ok`, `slugs_in_catalog` / `verdict_enum_ok` / `evidence_allowlisted` |
 | Online rules | Opik UI → Project → Evaluation Rules: Custom LLM-as-Judge filtered by those tags; map `input` / `output`; sample 100% until cost requires throttling |
 | Offline | `npm run opik:eval` validates fixtures under [`scripts/opik/fixtures/`](../../scripts/opik/fixtures/); with Opik env set, logs a suite summary trace |
 
@@ -93,9 +93,10 @@ Workers AI uses the `AI` binding (no account REST token required on the Worker).
 
 | Workflow | Cron (UTC) | Writes |
 | --- | --- | --- |
-| `FetchNewsWorkflow` | `0 */6 * * *` | KV `news:file`, `news:md`; D1 `events`; LLM classify + gate; Vectorize for `ingestAsSource` |
+| `FetchNewsWorkflow` | `0 */6 * * *` | KV `news:file`, `news:md`; D1 `events`; LLM classify + gate; Vectorize for `ingestAsSource`; enqueues ProposeWiki |
 | `FactCheckWorkflow` | `0 3 * * 1` | KV `fact-check:{docsId}` (Opik-traced) |
 | `IngestCorpusWorkflow` | `0 */12 * * *` | D1 documents/events; R2 chunks; Vectorize upserts |
+| `ProposeWikiWorkflow` | `15 */6 * * *` | KV `proposals:file` (same-project prior chunks; Opik-traced) |
 
 CI (`.github/workflows/ci.yml`) still runs audit + build on push/PR. Scheduled GitHub Actions for news / fact-check were removed.
 

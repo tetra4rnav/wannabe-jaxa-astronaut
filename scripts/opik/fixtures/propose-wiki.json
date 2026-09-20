@@ -1,0 +1,15 @@
+[
+	{
+		"id": "artemis-update-sample",
+		"newsId": "sample-news-1",
+		"expect": {
+			"actionIn": ["update", "create", "add-project", "skip"],
+			"evidenceMustBeOfficial": true
+		},
+		"assertions": [
+			"action must be one of update, create, add-project, skip",
+			"evidenceUrls must be empty or copied from prior official/paper chunks",
+			"must not invent wiki Markdown body"
+		]
+	}
+]
