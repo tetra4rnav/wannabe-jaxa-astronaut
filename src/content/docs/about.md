@@ -1,47 +1,33 @@
 ---
 title: このサイトについて
-description: 非公式であること、収集方法、Wikiの出典方針、エージェント向け情報。
+description: 非公式であること、誰のためのサイトか、Wikiの出典方針、四つの段階。
 ---
 
 ## 非公式であることの明示
 
 本サイト（JAXA宇宙飛行士志望Wiki）は **JAXA・NASA・ESA 等の公式サイトではありません**。個人・コミュニティ向けの学習用静的サイトです。選抜応募や公式手続きは各機関の公式ページを参照してください。
 
-## Wiki の方針
+## 誰のためのサイトか
 
-- 本文・要約・数字は **許可リスト上の公式一次資料** のみを根拠にします。
-- Wikipedia、報道、ブログ、SNS、二次解説は Wiki の出典にしません（手がかりにはしてよいが引用しない）。
-- インタビューは JAXA / NASA 等の公式プロフィール、記者会見、公式チャンネルに限ります。
-- 全文転載はしません。要約と公式 URL を示します。
-- 必須 frontmatter: `title`、`description`、`sources`（公式 URL 配列）、`reviewed`。
-- ファクトチェック履歴は `src/data/fact-checks/<docs-id>.json` に追記のみ（本文と分離）。
+JAXA 宇宙飛行士を志望する人、日本の有人宇宙開発を公式一次資料から学びたい人向けです。応募窓口でも、速報メディアでもありません。
 
-許可ドメインは [`src/config/official-domains.ts`](https://github.com/tetra4rnav/wannabe-jaxa-astronaut/blob/main/src/config/official-domains.ts) を参照。
+## 読み方
 
-## テーマ（フォルダ）の足し方
+- **Wiki** は許可された公式一次資料だけを根拠にします。Wikipedia、報道、ブログ、SNS、二次解説は出典にしません（手がかりにはしてよいが引用しない）。
+- **ニュース** は各国の公式フィードや公式 X を集めます。日付の新しい順だけでなく、関連する計画・事業の時間的な前後関係と一緒に読みます。
+- **Wiki の本文は人が書きます。** LLM は「どのページを足す／直すか」の提案と、定期的なファクトチェックをします。本文の自動生成・自動書き換えはしません。
 
-1. `src/content/docs/<slug>/` を作る（スラッグは英数字）。
-2. `index.md` に日本語の `title` を書く。
-3. 記事 Markdown を置く（テンプレート: `src/content/docs/_template/`）。
-4. サイドバーとトップの案内はフォルダ走査で自動更新されます（`astro.config` への手書き追加は不要）。
+## 四つの段階
 
-## ニュースの収集方法
+公式ソースからニュースを集め、関連プロジェクトの公式経緯の中に置いて見せます。LLM は同じプロジェクトの前後の公式資料を根拠に、Wiki の追加や修正を提案します。人が公式 URL を出典にして Markdown を書きます。LLM が本文と出典を突き合わせますが、指摘は履歴に残すだけで、直すのは人です。
 
-- GitHub Actions が **6 時間ごと** に RSS / HTML 一覧と公式 X（API）を取得し、差分があれば `src/data/news.json` をコミットします。
-- 日本語以外はタイトルと短文のみ機械翻訳します（同一 URL は再翻訳しません）。`DEEPL_API_KEY` があれば DeepL、無ければキーなし API を使います。
-- X は公式アカウントのみ。`X_BEARER_TOKEN` が無いときは X をスキップし、本ページとニュースページに未設定と表示します。
-- SpaceNews / TASS などの報道はニュース欄専用で、Wiki には混ぜません。
+インタビューは JAXA / NASA 等の公式プロフィール、記者会見、公式チャンネルに限ります。全文転載はしません。要約と公式 URL を示します。
 
-## LLM / エージェント向け
+## Wiki を足す
 
-- 契約: リポジトリ直下の [AGENTS.md](https://github.com/tetra4rnav/wannabe-jaxa-astronaut/blob/main/AGENTS.md)
-- 正本: `src/content/docs/**/*.md`
-- 各ページの `.md` 鏡像、`/llms.txt`、`/news.md`、`/news.json`
-- 外部 RAG: `/corpus/*.jsonl`（サイト内 Vectorize / チャット API はありません）
-- `npm run wiki:audit` で出典ドメインを検査
+1. 公式ページの URL を手元に置く（許可ドメイン以外は出典にしない）。
+2. `src/content/docs/<slug>/` に Markdown を置く。新しいテーマならフォルダと `index.md`（日本語の `title`）を足す。テンプレートは `src/content/docs/_template/`。
+3. 必須 frontmatter: `title`、`description`、`sources`（公式 URL の配列）、`reviewed`。
+4. サイドバーとトップの案内はフォルダ走査で自動更新されます。
 
-### RAG コーパスの取り込み
-
-1. `/corpus/manifest.json` でスキーマ版と件数を確認
-2. `/corpus/chunks.jsonl`（または `wiki.jsonl` / `news.jsonl`）を埋め込みインデックスへ流す
-3. Wiki 変更・ニュース更新後は `npm run corpus:build`（`astro build` の前にも実行）
+手順の詳細やデプロイ、Secrets、ジョブ仕様は開発者向けの [`docs/`](https://github.com/tetra4rnav/wannabe-jaxa-astronaut/tree/main/docs) を参照してください。
