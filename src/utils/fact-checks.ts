@@ -1,21 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import type { FactCheckEntry, FactCheckFile } from './fact-check-types.ts';
 
-export type FactCheckVerdict = 'pass' | 'needs-update' | 'failed';
-
-export interface FactCheckEntry {
-	date: string;
-	model: string;
-	verdict: FactCheckVerdict;
-	summary: string;
-	issues: string[];
-}
-
-export interface FactCheckFile {
-	id: string;
-	entries: FactCheckEntry[];
-}
+export type { FactCheckEntry, FactCheckFile, FactCheckVerdict } from './fact-check-types.ts';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '../data/fact-checks');
 

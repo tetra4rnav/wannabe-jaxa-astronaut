@@ -1,47 +1,8 @@
 ---
-import { getFactCheckEntries } from '../utils/fact-checks';
-import type { FactCheckEntry } from '../utils/fact-checks';
+import { FactCheckHistoryClient } from './FactCheckHistoryClient';
 
 const id = Astro.locals.starlightRoute?.id ?? '';
 const skip = !id || id === 'index' || id === 'about' || id.startsWith('_template');
-let entries: FactCheckEntry[] = [];
-if (!skip) {
-	entries = getFactCheckEntries(id);
-}
-
-const verdictLabel: Record<string, string> = {
-	pass: '合格',
-	'needs-update': '要更新',
-	failed: '失敗',
-};
 ---
 
-{
-	!skip && (
-		<section class="fact-check" aria-labelledby="fact-check-heading">
-			<h2 id="fact-check-heading">ファクトチェック履歴</h2>
-			{entries.length === 0 ? (
-				<p class="mt-hint">未実施</p>
-			) : (
-				<ul>
-					{entries.map((e) => (
-						<li>
-							<strong>{e.date}</strong>
-							{' — '}
-							{verdictLabel[e.verdict] ?? e.verdict}
-							{e.model ? `（${e.model}）` : ''}
-							{e.summary ? <p>{e.summary}</p> : null}
-							{e.issues?.length ? (
-								<ul>
-									{e.issues.map((issue) => (
-										<li>{issue}</li>
-									))}
-								</ul>
-							) : null}
-						</li>
-					))}
-				</ul>
-			)}
-		</section>
-	)
-}
+{!skip && <FactCheckHistoryClient client:load docsId={id} />}

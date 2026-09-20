@@ -1,0 +1,36 @@
+{
+	"name": "wannabe-jaxa-jobs",
+	"main": "src/index.ts",
+	"compatibility_date": "2026-09-20",
+	"compatibility_flags": ["nodejs_compat"],
+	"observability": {
+		"enabled": true,
+		"traces": {
+			"enabled": true
+		}
+	},
+	"ai": {
+		"binding": "AI"
+	},
+	"kv_namespaces": [
+		{
+			"binding": "STORE",
+			"id": "e6e6affaab6e4dc489d0d1121e2bc2f9",
+			"preview_id": "40c541c4592240a68f2311f1c018f355"
+		}
+	],
+	"workflows": [
+		{
+			"name": "wannabe-fetch-news",
+			"binding": "FETCH_NEWS",
+			"class_name": "FetchNewsWorkflow",
+			"schedules": ["0 */6 * * *"]
+		},
+		{
+			"name": "wannabe-fact-check",
+			"binding": "FACT_CHECK",
+			"class_name": "FactCheckWorkflow",
+			"schedules": ["0 3 * * 1"]
+		}
+	]
+}

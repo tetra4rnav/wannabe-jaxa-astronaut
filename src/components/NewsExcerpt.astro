@@ -13,13 +13,13 @@ const items = (news.items as NewsItem[]).slice(0, 5);
 			（X API: <strong>未設定</strong>）
 		</>
 	)}
+	{' '}
+	一覧は定期取得のライブ JSON（<a href="/news.json">/news.json</a>）を読みます。
 </p>
 
 {
 	items.length === 0 ? (
-		<p class="mt-hint">
-			まだニュースがありません。<code>npm run fetch:news</code> で取得します。
-		</p>
+		<p class="mt-hint">まだニュースがありません。</p>
 	) : (
 		items.map((item) => (
 			<article class="news-item" data-region={item.region} data-kind={item.kind}>
