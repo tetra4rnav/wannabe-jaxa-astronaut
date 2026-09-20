@@ -1,0 +1,22 @@
+---
+const themes = [
+	{ href: '/policy/', title: '政策・制度', desc: '宇宙基本計画・予算・国際枠組み' },
+	{ href: '/astronauts/', title: '宇宙飛行士', desc: '一覧・インタビューテーマ・個人ページ' },
+	{ href: '/society/', title: '社会学', desc: '月面社会など' },
+	{ href: '/physiology/', title: '生理学', desc: '微小重力など' },
+	{ href: '/satellites/', title: '人工衛星', desc: '概要と公式資料' },
+];
+---
+
+<div class="my-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+	{
+		themes.map((t) => (
+			<a href={t.href} class="no-underline">
+				<div class="h-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 text-[hsl(var(--card-foreground))] shadow-sm transition-colors hover:border-[hsl(var(--primary))]">
+					<p class="text-base font-semibold">{t.title}</p>
+					<p class="mt-1 text-sm text-[hsl(var(--muted-foreground))]">{t.desc}</p>
+				</div>
+			</a>
+		))
+	}
+</div>

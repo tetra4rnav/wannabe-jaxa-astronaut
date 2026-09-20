@@ -2,6 +2,8 @@
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import news from '../data/news.json';
 import type { NewsItem } from '../utils/news-types';
+import { NewsCards } from '../components/NewsCards';
+import SiteDisclaimer from '../components/SiteDisclaimer.astro';
 
 const items = news.items as NewsItem[];
 const regions = [
@@ -21,28 +23,37 @@ const regions = [
 		description: '各国公式フィードと公式Xの原語＋日本語対照一覧（機械翻訳あり）。',
 	}}
 >
-	<aside class="site-disclaimer" role="note">
-		<strong>非公式:</strong> 本サイトは宇宙機関の公式サイトではありません。タイトル・短文の日本語は機械翻訳の場合があります。
-	</aside>
+	<SiteDisclaimer>
+		本サイトは宇宙機関の公式サイトではありません。タイトル・短文の日本語は機械翻訳の場合があります。
+	</SiteDisclaimer>
 
-	<p class="mt-hint">
+	<p class="mb-4 text-sm text-[hsl(var(--muted-foreground))]">
 		X API: {news.xConfigured ? '設定済み' : <strong>未設定</strong>}
-		（未設定時は RSS / HTML のみ）。最終更新: <time datetime={news.updatedAt}>{news.updatedAt}</time>
+		（未設定時は RSS / HTML のみ）。最終更新:{' '}
+		<time datetime={news.updatedAt}>{news.updatedAt}</time>
 		· <a href="/news.md">news.md</a> · <a href="/news.json">news.json</a>
 	</p>
 
-	<form class="news-filters" method="get">
-		<label>
+	<form class="mb-6 flex flex-wrap gap-4" method="get">
+		<label class="text-sm">
 			地域
-			<select name="region" id="region">
+			<select
+				name="region"
+				id="region"
+				class="ml-2 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-2 py-1"
+			>
 				{regions.map((r) => (
 					<option value={r.id}>{r.label}</option>
 				))}
 			</select>
 		</label>
-		<label>
+		<label class="text-sm">
 			種別
-			<select name="kind" id="kind">
+			<select
+				name="kind"
+				id="kind"
+				class="ml-2 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-2 py-1"
+			>
 				<option value="all">すべて</option>
 				<option value="rss">RSS</option>
 				<option value="html-list">HTML一覧</option>
@@ -53,43 +64,7 @@ const regions = [
 	</form>
 
 	<div id="news-list">
-		{
-			items.length === 0 ? (
-				<p>ニュースはまだありません。<code>npm run fetch:news</code> または GitHub Actions で取得してください。</p>
-			) : (
-				items.map((item) => (
-					<article
-						class="news-item"
-						data-region={item.region}
-						data-kind={item.kind}
-					>
-						<p class="news-meta">
-							{item.sourceLabel}
-							{item.accountHandle ? ` (@${item.accountHandle})` : ''} · {item.region} ·{' '}
-							{item.kind} · <time datetime={item.publishedAt}>{item.publishedAt.slice(0, 10)}</time>
-							{item.machineTranslated ? ' · 機械翻訳' : ''}
-						</p>
-						<div class="news-pair">
-							<div class="news-col" lang={item.lang}>
-								<div class="label">原語 ({item.lang})</div>
-								<strong>{item.titleOriginal}</strong>
-								<p>{item.summaryOriginal}</p>
-							</div>
-							<div class="news-col" lang="ja">
-								<div class="label">日本語</div>
-								<strong>{item.titleJa}</strong>
-								<p>{item.summaryJa}</p>
-							</div>
-						</div>
-						<p>
-							<a href={item.url} rel="noopener noreferrer">
-								原文・公式リンク
-							</a>
-						</p>
-					</article>
-				))
-			)
-		}
+		<NewsCards items={items} showAll />
 	</div>
 
 	<script is:inline>
@@ -102,7 +77,7 @@ const regions = [
 			function apply() {
 				const r = region ? region.value : 'all';
 				const k = kind ? kind.value : 'all';
-				document.querySelectorAll('.news-item').forEach(function (el) {
+				document.querySelectorAll('#news-list [data-region]').forEach(function (el) {
 					const okR = r === 'all' || el.getAttribute('data-region') === r;
 					const okK = k === 'all' || el.getAttribute('data-kind') === k;
 					el.hidden = !(okR && okK);

@@ -2,11 +2,13 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import starlightLlmsTxt from 'starlight-llms-txt';
+import react from '@astrojs/react';
+import tailwindcss from '@tailwindcss/vite';
 import { wikiSidebar } from './src/utils/sidebar.ts';
 
 // https://astro.build/config
 export default defineConfig({
-	site: 'https://wannabe-jaxa-astronaut.jh1cid.workers.dev',
+	site: 'https://wannabe-jaxa-astronaut.pages.dev',
 	integrations: [
 		starlight({
 			title: 'JAXA宇宙飛行士志望Wiki',
@@ -25,7 +27,7 @@ export default defineConfig({
 					href: 'https://github.com/tetra4rnav/wannabe-jaxa-astronaut',
 				},
 			],
-			customCss: ['./src/styles/custom.css'],
+			customCss: ['./src/styles/global.css', './src/styles/custom.css'],
 			components: {
 				Head: './src/components/Head.astro',
 				Header: './src/components/Header.astro',
@@ -83,5 +85,9 @@ export default defineConfig({
 				}),
 			],
 		}),
+		react(),
 	],
+	vite: {
+		plugins: [tailwindcss()],
+	},
 });

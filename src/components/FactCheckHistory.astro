@@ -14,31 +14,51 @@ const verdictLabel: Record<string, string> = {
 	'needs-update': '要更新',
 	failed: '失敗',
 };
+
+const verdictClass: Record<string, string> = {
+	pass: 'bg-emerald-700/80 text-emerald-50',
+	'needs-update': 'bg-amber-700/80 text-amber-50',
+	failed: 'bg-red-700/80 text-red-50',
+};
 ---
 
 {
 	!skip && (
-		<section class="fact-check" aria-labelledby="fact-check-heading">
-			<h2 id="fact-check-heading">ファクトチェック履歴</h2>
+		<section class="mt-8" aria-labelledby="fact-check-heading">
+			<h2 id="fact-check-heading" class="mb-3 text-lg font-semibold">
+				ファクトチェック履歴
+			</h2>
 			{entries.length === 0 ? (
-				<p>未実施</p>
+				<p class="text-sm text-[hsl(var(--muted-foreground))]">未実施</p>
 			) : (
-				<ul>
+				<div class="flex flex-col gap-3">
 					{entries.map((e) => (
-						<li>
-							<strong>{e.date}</strong> — {verdictLabel[e.verdict] ?? e.verdict}
-							{e.model ? `（${e.model}）` : ''}
-							{e.summary ? `: ${e.summary}` : ''}
+						<div class="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-sm">
+							<div class="mb-2 flex items-center justify-between gap-2">
+								<strong class="text-sm">{e.date}</strong>
+								<span
+									class:list={[
+										'inline-flex rounded-md px-2 py-0.5 text-xs font-medium',
+										verdictClass[e.verdict] ?? 'bg-[hsl(var(--secondary))]',
+									]}
+								>
+									{verdictLabel[e.verdict] ?? e.verdict}
+								</span>
+							</div>
+							{e.model ? (
+								<p class="text-xs text-[hsl(var(--muted-foreground))]">{e.model}</p>
+							) : null}
+							{e.summary ? <p class="mt-2 text-sm">{e.summary}</p> : null}
 							{e.issues?.length ? (
-								<ul>
+								<ul class="mt-2 list-disc space-y-1 pl-5 text-sm">
 									{e.issues.map((issue) => (
 										<li>{issue}</li>
 									))}
 								</ul>
 							) : null}
-						</li>
+						</div>
 					))}
-				</ul>
+				</div>
 			)}
 		</section>
 	)

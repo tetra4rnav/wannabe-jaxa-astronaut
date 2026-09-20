@@ -40,4 +40,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://wannabe-jaxa-astronaut.jh1cid.workers.dev/sitemap-index.xml
+Sitemap: https://wannabe-jaxa-astronaut.pages.dev/sitemap-index.xml

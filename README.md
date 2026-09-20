@@ -1,6 +1,6 @@
 # JAXA宇宙飛行士志望Wiki（非公式）
 
-Astro Starlight の日本語静的サイト。Wiki は公式一次資料のみ。ニュースは各国公式フィード / 公式 X の原語＋日本語対照。Cloudflare Workers Static Assets にデプロイします。
+Astro Starlight の日本語静的サイト。Wiki は公式一次資料のみ。ニュースは各国公式フィード / 公式 X の原語＋日本語対照。**Cloudflare Pages** にデプロイします。
 
 ## コマンド
 
@@ -12,18 +12,20 @@ Astro Starlight の日本語静的サイト。Wiki は公式一次資料のみ�
 | `npm run fetch:news` | RSS/HTML/X 取得 → `src/data/news.json` |
 | `npm run wiki:audit` | 公式ドメイン監査 |
 | `npm run corpus:build` | `/corpus/*.jsonl` 生成 |
-| `npm run deploy` | build + `wrangler deploy` |
+| `npm run deploy` | build + `wrangler pages deploy` |
 
 ## ライブ URL
 
-- サイト: https://wannabe-jaxa-astronaut.jh1cid.workers.dev
+- サイト: https://wannabe-jaxa-astronaut.pages.dev
 - GitHub: https://github.com/tetra4rnav/wannabe-jaxa-astronaut
+
+旧 Workers URL（`*.workers.dev`）から Pages へ移行済みです。
 
 ## デプロイ
 
 - Build: `npm run build`
-- Deploy: `npx wrangler deploy`（`wrangler.jsonc` の `assets.directory` = `./dist`）
-- Workers Builds を使う場合は GitHub リポを Cloudflare に接続
+- Deploy: `npx wrangler pages deploy ./dist --project-name=wannabe-jaxa-astronaut`
+- または Cloudflare ダッシュボードで Git 連携（Build: `npm run build` / Output: `dist`）
 
 ### Cloudflare ボット設定（重要）
 

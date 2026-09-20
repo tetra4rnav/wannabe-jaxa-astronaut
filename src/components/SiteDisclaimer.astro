@@ -1,0 +1,17 @@
+---
+let body = '本サイトは JAXA・宇宙機関の公式サイトではありません。';
+try {
+	const slotted = await Astro.slots.render('default');
+	if (slotted && slotted.trim()) body = slotted;
+} catch {
+	/* no slot */
+}
+---
+
+<aside
+	class="mb-4 rounded-lg border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm"
+	role="alert"
+>
+	<p class="mb-1 font-medium">非公式</p>
+	<div class="opacity-90" set:html={body} />
+</aside>
