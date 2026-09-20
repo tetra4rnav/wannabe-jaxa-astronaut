@@ -1,0 +1,6 @@
+---
+description: Follow repository agent contract
+alwaysApply: true
+---
+
+Read and follow [`AGENTS.md`](../AGENTS.md) at the repository root. Do not duplicate its rules here.

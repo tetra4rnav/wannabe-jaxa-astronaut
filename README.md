@@ -1,59 +1,39 @@
 # JAXA宇宙飛行士志望Wiki（非公式）
 
-Astro Starlight の日本語静的サイト。Wiki は公式一次資料のみ。ニュースは各国公式フィード / 公式 X の原語＋日本語対照。**Cloudflare Pages** にデプロイします。
+[English](./README.en.md)
 
-## コマンド
+本リポジトリは **JAXA・NASA・ESA などの公式サイトではありません。** 選抜応募や公式手続きは、各機関の公式ページを見てください。
 
-| Command | Action |
-| --- | --- |
-| `npm install` | 依存関係 |
-| `npm run dev` | 開発サーバ |
-| `npm run build` | コーパス生成 + 本番ビルド → `dist/` |
-| `npm run fetch:news` | RSS/HTML/X 取得 → `src/data/news.json` |
-| `npm run wiki:audit` | 公式ドメイン監査 |
-| `npm run corpus:build` | `/corpus/*.jsonl` 生成 |
-| `npm run deploy` | （任意）ローカル build + Pages Direct Upload。通常は Git push |
+## 四つの段階
 
-## ライブ URL
-
-- サイト: https://wannabe-jaxa-astronaut.pages.dev
-- GitHub: https://github.com/tetra4rnav/wannabe-jaxa-astronaut
-
-旧 `*.workers.dev` Worker は削除済み。デプロイは Pages Git 連携のみです。
-
-## デプロイ
-
-**本番は Cloudflare Pages の Git 連携**（`tetra4rnav/wannabe-jaxa-astronaut` → `main`）。
-
-| 項目 | 値 |
-| --- | --- |
-| Build command | `npm run build` |
-| Build output | `dist` |
-| Production branch | `main` |
-
-`main` への push と PR で自動ビルド・プレビューされます。手動 Direct Upload は通常不要です。
-
-```bash
-# 緊急時のみ（通常は Git push）
-npx wrangler pages deploy ./dist --project-name=wannabe-jaxa-astronaut
+```mermaid
+flowchart LR
+  News["自動: ニュースを集める / Auto: collect news"] --> Propose["LLM: Wikiの案を出す / LLM: propose wiki pages"]
+  Propose --> Human["人: Wikiを書く / Human: write the wiki"]
+  Human --> Audit["LLM: 事実を確かめる / LLM: check the facts"]
+  Audit --> Human
 ```
 
-### Cloudflare ボット設定（重要）
+## ニュースと Wiki
 
-このサイトは OAI-SearchBot / GPTBot / ClaudeBot / Googlebot など AI・検索クローラ向けに公開しています。**Bot Fight Mode** や **AI Crawl Control / AI クローラ遮断**、WAF でボットを 403 にするルールは有効にしないでください。`public/robots.txt` は全面 `Allow` です。
+| | ニュース | Wiki |
+| --- | --- | --- |
+| 中身 | 公式フィードや公式 X の出来事 | 人が書く学習用の要約 |
+| 出典 | 公式の配信・投稿を集める | 許可された公式 URL だけ |
+| 読み方 | 新しい順だけでなく、計画・事業の時間の流れの中で読む | テーマごとに整理された正本 |
+| LLM | 集め方の一部に使うことがある | 案と監査だけ。本文は書かない |
 
-### 必要な Secrets（GitHub）
+関係は図のとおりです。ニュースがきっかけになり、LLM が Wiki の案を出し、人が公式資料で書き、LLM が事実を確かめます。ニュースの文章を Wiki にコピーしません。報道は Wiki の出典にしません。
 
-| Secret | 用途 |
-| --- | --- |
-| `X_BEARER_TOKEN` | 公式 X 取得（無いと X スキップ） |
-| `DEEPL_API_KEY` | 任意。DeepL 翻訳 |
-| `CF_ACCOUNT_ID` | 週次ファクトチェック（Workers AI） |
-| `CF_API_TOKEN` | Workers AI 呼び出し用 API トークン |
-| `CF_AI_MODEL` | 任意。既定 `@cf/meta/llama-3.1-8b-instruct` |
+## 誰のためのサイトか
 
-ローカルデプロイには `wrangler login`（または Cloudflare API トークン）が必要です。
+JAXA 宇宙飛行士を志望する人、日本の有人宇宙開発を公式一次資料から学びたい人向けの学習用サイトです。応募窓口でも、速報メディアでもありません。
 
-## エージェント向け
+## サイト
 
-契約は [AGENTS.md](./AGENTS.md)。RAG は `/corpus/chunks.jsonl`（サイト内チャット API なし）。
+- 公開サイト: https://wannabe-jaxa-astronaut.pages.dev
+- GitHub: https://github.com/tetra4rnav/wannabe-jaxa-astronaut
+
+Wiki を足すときは、公式ページの URL を出典に Markdown を書いてください。手順はサイトの [このサイトについて](https://wannabe-jaxa-astronaut.pages.dev/about/) にあります。
+
+開発者向けの仕様は [docs/](./docs/) を参照してください。
