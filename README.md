@@ -14,6 +14,11 @@ Astro Starlight の日本語静的サイト。Wiki は公式一次資料のみ�
 | `npm run corpus:build` | `/corpus/*.jsonl` 生成 |
 | `npm run deploy` | build + `wrangler deploy` |
 
+## ライブ URL
+
+- サイト: https://wannabe-jaxa-astronaut.jh1cid.workers.dev
+- GitHub: https://github.com/tetra4rnav/wannabe-jaxa-astronaut
+
 ## デプロイ
 
 - Build: `npm run build`

@@ -96,11 +96,22 @@ async function parseHtmlList(
 		if (seen.has(href)) continue;
 		seen.add(href);
 		if (!matchesKeywords(`${title}`, NEWS_KEYWORDS) && feed.region !== 'spacex') {
-			// For SpaceX updates page, keep recent-looking anchors with spacex.com path
-			if (!href.includes('spacex.com')) continue;
-			if (title.length < 8) continue;
+			// Agency list pages: keep same-site press/news links even without keywords
+			if (feed.region === 'japan' && href.includes('jaxa.jp') && /press|topics|news/i.test(href)) {
+				// keep
+			} else if (feed.region === 'russia' && href.includes('roscosmos.ru')) {
+				// keep
+			} else if (feed.region === 'china' && (href.includes('cmse.gov.cn') || href.includes('cnsa.gov.cn'))) {
+				// keep
+			} else if (!href.includes('spacex.com') || title.length < 8) {
+				if (!matchesKeywords(`${title}`, NEWS_KEYWORDS)) continue;
+			}
 		} else if (!matchesKeywords(`${title}`, NEWS_KEYWORDS)) {
-			continue;
+			if (feed.region === 'spacex') {
+				if (!href.includes('spacex.com') || title.length < 8) continue;
+			} else {
+				continue;
+			}
 		}
 		out.push({
 			id: hashId(href),
