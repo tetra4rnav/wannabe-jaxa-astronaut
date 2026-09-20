@@ -17,10 +17,11 @@ export const FEEDS: FeedConfig[] = [
 	{
 		id: 'jaxa-press',
 		label: 'JAXA プレスリリース',
-		url: 'https://www.jaxa.jp/press/rss.xml',
+		url: 'https://www.jaxa.jp/press/index_j.html',
 		lang: 'ja',
 		region: 'japan',
-		kind: 'rss',
+		kind: 'html-list',
+		linkSelector: 'a',
 	},
 	{
 		id: 'nasa-breaking',
