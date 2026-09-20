@@ -50,6 +50,7 @@ export default defineConfig({
 						{ label: 'ホーム', slug: '' },
 						{ label: 'このサイトについて', slug: 'about' },
 						{ label: 'プロジェクト時系列', link: '/projects/' },
+						{ label: 'Wiki 構築提案', link: '/proposals/' },
 						{ label: 'サイトマップ', link: '/sitemap/' },
 					],
 				},

@@ -79,6 +79,12 @@ async function maybeLogOpikSuite(suiteName: string, items: { id: string; asserti
 	console.log(`[opik:eval] logged suite trace ${id} to project ${projectName}`);
 }
 
+type ProposeFixture = {
+	id: string;
+	expect: { actionIn: string[]; evidenceMustBeOfficial?: boolean };
+	assertions: string[];
+};
+
 function validateNewsFixtures(failures: string[]) {
 	const fixtures = loadJson<NewsFixture[]>('news-ingest-gate.json');
 	for (const f of fixtures) {
@@ -119,10 +125,29 @@ function validateFactFixtures(failures: string[]) {
 	return fixtures;
 }
 
+function validateProposeFixtures(failures: string[]) {
+	const fixtures = loadJson<ProposeFixture[]>('propose-wiki.json');
+	const actions = new Set(['update', 'create', 'add-project', 'skip']);
+	for (const f of fixtures) {
+		assert(Array.isArray(f.assertions) && f.assertions.length > 0, `${f.id}: assertions required`, failures);
+		assert(
+			Array.isArray(f.expect.actionIn) && f.expect.actionIn.length > 0,
+			`${f.id}: actionIn required`,
+			failures,
+		);
+		for (const a of f.expect.actionIn) {
+			assert(actions.has(a), `${f.id}: bad action ${a}`, failures);
+		}
+	}
+	console.log(`[opik:eval] propose-wiki fixtures: ${fixtures.length} ok (contract)`);
+	return fixtures;
+}
+
 async function main() {
 	const failures: string[] = [];
 	const news = validateNewsFixtures(failures);
 	const facts = validateFactFixtures(failures);
+	const proposals = validateProposeFixtures(failures);
 	await maybeLogOpikSuite(
 		'news-ingest-gate',
 		news.map((f) => ({ id: f.id, assertions: f.assertions })),
@@ -130,6 +155,10 @@ async function main() {
 	await maybeLogOpikSuite(
 		'fact-check',
 		facts.map((f) => ({ id: f.id, assertions: f.assertions })),
+	);
+	await maybeLogOpikSuite(
+		'propose-wiki',
+		proposals.map((f) => ({ id: f.id, assertions: f.assertions })),
 	);
 
 	const realFailures = failures.filter(Boolean);
@@ -139,7 +168,9 @@ async function main() {
 		process.exit(1);
 	}
 	console.log('[opik:eval] OK');
-	console.log(`[opik:eval] Online rules: Opik project → Evaluation Rules; filter tags judgment:news-ingest-gate and judgment:fact-check; map input/output; Custom LLM-as-Judge.`);
+	console.log(
+		`[opik:eval] Online rules: Opik project → Evaluation Rules; filter tags judgment:news-ingest-gate, judgment:fact-check, judgment:propose-wiki; map input/output; Custom LLM-as-Judge.`,
+	);
 }
 
 main().catch((err) => {

@@ -57,6 +57,12 @@
 			"binding": "INGEST_CORPUS",
 			"class_name": "IngestCorpusWorkflow",
 			"schedules": ["0 */12 * * *"]
+		},
+		{
+			"name": "wannabe-propose-wiki",
+			"binding": "PROPOSE_WIKI",
+			"class_name": "ProposeWikiWorkflow",
+			"schedules": ["15 */6 * * *"]
 		}
 	]
 }

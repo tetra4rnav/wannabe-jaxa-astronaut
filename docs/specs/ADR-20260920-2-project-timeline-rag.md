@@ -17,7 +17,8 @@ Retrieval for proposals and display must preserve program history, not a flat do
 - Retrieval for a news item: same project(s), `occurred_at` on or before the news date, prefer `official` / `paper` (and gated `news`) for proposal grounding.
 - UI: `/projects/{slug}/` mixes official milestones and news; news cards show project badges and 「根拠候補」 when gated in.
 - Unassigned news keeps an `unassigned` event.
-- **Every LLM judgment** (news gate, fact-check; later proposals) is traced and structurally scored in **Opik** (`shared/opik/`).
+- **Every LLM judgment** (news gate, fact-check, wiki proposals) is traced and structurally scored in **Opik** (`shared/opik/`).
+- ProposeWiki retrieves same-project Vectorize chunks with `occurred_at` on or before the news date (prefer `official` / `paper`), then writes proposal JSON to KV only — never wiki Markdown.
 
 ## Consequences
 

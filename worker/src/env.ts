@@ -7,6 +7,7 @@ export interface Env {
 	FETCH_NEWS: Workflow;
 	FACT_CHECK: Workflow;
 	INGEST_CORPUS: Workflow;
+	PROPOSE_WIKI: Workflow;
 	X_BEARER_TOKEN?: string;
 	DEEPL_API_KEY?: string;
 	CF_AI_MODEL?: string;

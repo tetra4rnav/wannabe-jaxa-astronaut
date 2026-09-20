@@ -146,5 +146,15 @@ export class FetchNewsWorkflow extends WorkflowEntrypoint<Env> {
 			await this.env.STORE.put(NEWS_MD_KV_KEY, newsFileToMarkdown(tagged));
 			return { count: tagged.items.length, updatedAt: tagged.updatedAt };
 		});
+
+		const newIds = Object.keys(classifiedMap);
+		if (newIds.length) {
+			await step.do('enqueue propose-wiki', async () => {
+				const instance = await this.env.PROPOSE_WIKI.create({
+					params: { newsIds: newIds },
+				});
+				return instance.id;
+			});
+		}
 	}
 }

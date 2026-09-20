@@ -1,0 +1,26 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import { ProposalsList } from '../../components/ProposalsList';
+import SiteDisclaimer from '../../components/SiteDisclaimer.astro';
+
+const newsId = Astro.url.searchParams.get('news');
+---
+
+<StarlightPage
+	frontmatter={{
+		title: 'Wiki 構築提案',
+		description: 'ニュースをきっかけに、LLM が Wiki の追記・新規の案を出します。本文は人が書きます。',
+	}}
+>
+	<SiteDisclaimer>
+		提案は同プロジェクトでニュース以前の公式／論文要旨チャンクを根拠にします。Wiki Markdown
+		は自動では書き換えません。
+	</SiteDisclaimer>
+
+	<p class="mb-4 text-sm text-muted-foreground">
+		<a href="/proposals.json">proposals.json</a>
+		{newsId ? <> · フィルタ: news=<code>{newsId}</code></> : null}
+	</p>
+
+	<ProposalsList client:load newsId={newsId} />
+</StarlightPage>

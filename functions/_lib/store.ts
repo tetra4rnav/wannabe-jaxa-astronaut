@@ -35,6 +35,30 @@ export type FactCheckFile = {
 
 export const NEWS_KV_KEY = 'news:file';
 export const NEWS_MD_KV_KEY = 'news:md';
+export const PROPOSALS_KV_KEY = 'proposals:file';
+
+export type WikiProposal = {
+	id: string;
+	createdAt: string;
+	newsId: string;
+	newsUrl: string;
+	newsTitle: string;
+	projectSlugs: string[];
+	action: string;
+	targetDocsId: string | null;
+	proposedTitle: string;
+	headings: string[];
+	evidenceUrls: string[];
+	timelineNote: string;
+	relation: string;
+	rationale: string;
+	model: string;
+};
+
+export type ProposalsFile = {
+	updatedAt: string;
+	items: WikiProposal[];
+};
 
 export function factCheckKvKey(docsId: string): string {
 	return `fact-check:${docsId.replace(/\\/g, '/').replace(/^\//, '')}`;
