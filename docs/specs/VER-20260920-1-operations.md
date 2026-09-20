@@ -16,8 +16,8 @@ Operator runbook for local commands, Pages deploy, secrets, and schedules. Visit
 | `npm install` | Install dependencies |
 | `npm run dev` | Dev server (`astro dev`; agents: `astro dev --background`) |
 | `npm run build` | Corpus generation + production build → `dist/` |
-| `npm run fetch:news` | RSS / HTML / X → `src/data/news.json` (local / CI fallback) |
-| `npm run wiki:audit` | Official-domain audit of wiki Markdown |
+| `npm run fetch:news` | RSS / HTML / X → `src/data/news.json` (local fallback) |
+| `npm run wiki:audit` | Official-domain audit of wiki Markdown (also runs in `prebuild`) |
 | `npm run corpus:build` | `/corpus/*.jsonl` generation |
 | `npm run fact-check` | Local append of LLM fact-check history under `src/data/fact-checks/` (optional) |
 | `npm run deploy` | Optional local build + Pages Direct Upload; normal path is Git push |
@@ -30,11 +30,13 @@ Operator runbook for local commands, Pages deploy, secrets, and schedules. Visit
 
 | Setting | Value |
 | --- | --- |
-| Build command | `npm run build` |
+| Build command | `npm run build` (runs `prebuild`: `wiki:audit` then `corpus:build`) |
 | Build output | `dist` |
 | Production branch | `main` |
 
 Emergency: `npx wrangler pages deploy ./dist --project-name=wannabe-jaxa-astronaut`.
+
+Source-domain audit runs on every Pages / local build via `prebuild`. There is no GitHub Actions CI workflow; PR / production deploy gates on the Cloudflare Pages build check. Scheduled news / fact-check jobs live on the Worker (not GitHub Actions).
 
 Do **not** enable Bot Fight Mode or AI crawler blocking; [`public/robots.txt`](../../public/robots.txt) is allow-all.
 
@@ -97,8 +99,6 @@ Workers AI uses the `AI` binding (no account REST token required on the Worker).
 | `FactCheckWorkflow` | `0 3 * * 1` | KV `fact-check:{docsId}` (Opik-traced) |
 | `IngestCorpusWorkflow` | `0 */12 * * *` | D1 documents/events; R2 chunks; Vectorize upserts |
 | `ProposeWikiWorkflow` | `15 */6 * * *` | KV `proposals:file` (same-project prior chunks; Opik-traced) |
-
-CI (`.github/workflows/ci.yml`) still runs audit + build on push/PR. Scheduled GitHub Actions for news / fact-check were removed.
 
 Human-owned project catalog: [`src/config/projects.ts`](../../src/config/projects.ts). Official seed URLs: [`src/config/corpus-seeds.ts`](../../src/config/corpus-seeds.ts).
 

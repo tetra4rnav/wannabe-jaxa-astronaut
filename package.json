@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "prebuild": "npm run corpus:build",
+    "prebuild": "npm run wiki:audit && npm run corpus:build",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
