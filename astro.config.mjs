@@ -6,7 +6,7 @@ import { wikiSidebar } from './src/utils/sidebar.ts';
 
 // https://astro.build/config
 export default defineConfig({
-	site: 'https://wannabe-jaxa-astronaut.workers.dev',
+	site: 'https://wannabe-jaxa-astronaut.jh1cid.workers.dev',
 	integrations: [
 		starlight({
 			title: 'JAXA宇宙飛行士志望Wiki',
