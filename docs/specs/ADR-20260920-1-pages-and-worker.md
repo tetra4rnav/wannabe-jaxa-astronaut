@@ -18,7 +18,7 @@ Need a static public wiki and separate scheduled AI / fetch work without mixing 
 
 ## Consequences
 
-- GitHub Action schedules move to the Worker in a later slice; update [VER-20260920-1-operations.md](./VER-20260920-1-operations.md) when that lands.
+- GitHub Action schedules for news / fact-check moved to Worker Workflows; see [VER-20260920-1-operations.md](./VER-20260920-1-operations.md).
 - Local `npm run fetch:news` may still write `src/data/news.json` for development.
 
 ## Alternatives considered

@@ -6,7 +6,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { FactCheckEntry, FactCheckFile } from '../src/utils/fact-checks.ts';
+import type { FactCheckEntry, FactCheckFile } from '../src/utils/fact-check-types.ts';
 import { factCheckPath } from '../src/utils/fact-checks.ts';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');

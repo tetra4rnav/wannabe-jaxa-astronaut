@@ -1,8 +1,4 @@
-import type { APIRoute } from 'astro';
-import news from '../data/news.json';
-import type { NewsItem } from '../utils/news-types';
-
-export const prerender = true;
+import type { NewsFile, NewsItem } from '../../src/utils/news-types.ts';
 
 function renderItem(item: NewsItem): string {
 	const lines = [
@@ -30,9 +26,9 @@ function renderItem(item: NewsItem): string {
 	return lines.join('\n');
 }
 
-export const GET: APIRoute = () => {
+export function newsFileToMarkdown(news: NewsFile): string {
 	const items = news.items as NewsItem[];
-	const body = [
+	return [
 		'# ニュース（原語＋日本語）',
 		'',
 		`updatedAt: ${news.updatedAt}`,
@@ -42,8 +38,11 @@ export const GET: APIRoute = () => {
 		'',
 		...items.map(renderItem),
 	].join('\n');
+}
 
-	return new Response(body, {
-		headers: { 'Content-Type': 'text/markdown; charset=utf-8' },
-	});
-};
+export const NEWS_KV_KEY = 'news:file';
+export const NEWS_MD_KV_KEY = 'news:md';
+
+export function factCheckKvKey(docsId: string): string {
+	return `fact-check:${docsId.replace(/\\/g, '/').replace(/^\//, '')}`;
+}

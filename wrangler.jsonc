@@ -1,5 +1,12 @@
 {
-  "name": "wannabe-jaxa-astronaut",
-  "compatibility_date": "2026-09-20",
-  "pages_build_output_dir": "./dist"
+	"name": "wannabe-jaxa-astronaut",
+	"compatibility_date": "2026-09-20",
+	"pages_build_output_dir": "./dist",
+	"kv_namespaces": [
+		{
+			"binding": "STORE",
+			"id": "e6e6affaab6e4dc489d0d1121e2bc2f9",
+			"preview_id": "40c541c4592240a68f2311f1c018f355"
+		}
+	]
 }

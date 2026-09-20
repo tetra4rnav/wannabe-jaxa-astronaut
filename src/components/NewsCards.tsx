@@ -12,7 +12,7 @@ export function NewsCards({ items, showAll = false }: Props) {
 	if (list.length === 0) {
 		return (
 			<p className="text-sm text-muted-foreground">
-				まだニュースがありません。<code>npm run fetch:news</code> で取得します。
+				まだニュースがありません。
 			</p>
 		);
 	}

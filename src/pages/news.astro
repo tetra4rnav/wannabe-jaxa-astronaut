@@ -1,11 +1,8 @@
 ---
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
-import news from '../data/news.json';
-import type { NewsItem } from '../utils/news-types';
-import { NewsCards } from '../components/NewsCards';
+import { NewsFeed } from '../components/NewsFeed';
 import SiteDisclaimer from '../components/SiteDisclaimer.astro';
 
-const items = news.items as NewsItem[];
 const regions = [
 	{ id: 'all', label: 'すべて' },
 	{ id: 'japan', label: '日本' },
@@ -26,13 +23,6 @@ const regions = [
 	<SiteDisclaimer>
 		本サイトは宇宙機関の公式サイトではありません。タイトル・短文の日本語は機械翻訳の場合があります。
 	</SiteDisclaimer>
-
-	<p class="mb-4 text-sm text-muted-foreground">
-		X API: {news.xConfigured ? '設定済み' : <strong>未設定</strong>}
-		（未設定時は RSS / HTML のみ）。最終更新:{' '}
-		<time datetime={news.updatedAt}>{news.updatedAt}</time>
-		· <a href="/news.md">news.md</a> · <a href="/news.json">news.json</a>
-	</p>
 
 	<form class="mb-6 flex flex-wrap gap-4" method="get">
 		<label class="text-sm">
@@ -64,7 +54,7 @@ const regions = [
 	</form>
 
 	<div id="news-list">
-		<NewsCards items={items} showAll />
+		<NewsFeed client:load showAll />
 	</div>
 
 	<script is:inline>
@@ -90,6 +80,11 @@ const regions = [
 			}
 			region && region.addEventListener('change', apply);
 			kind && kind.addEventListener('change', apply);
+			const list = document.getElementById('news-list');
+			if (list) {
+				const obs = new MutationObserver(apply);
+				obs.observe(list, { childList: true, subtree: true });
+			}
 			apply();
 		})();
 	</script>
