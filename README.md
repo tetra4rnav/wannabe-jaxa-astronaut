@@ -25,6 +25,10 @@ Astro Starlight の日本語静的サイト。Wiki は公式一次資料のみ�
 - Deploy: `npx wrangler deploy`（`wrangler.jsonc` の `assets.directory` = `./dist`）
 - Workers Builds を使う場合は GitHub リポを Cloudflare に接続
 
+### Cloudflare ボット設定（重要）
+
+このサイトは OAI-SearchBot / GPTBot / ClaudeBot / Googlebot など AI・検索クローラ向けに公開しています。**Bot Fight Mode** や **AI Crawl Control / AI クローラ遮断**、WAF でボットを 403 にするルールは有効にしないでください。`public/robots.txt` は全面 `Allow` です。
+
 ### 必要な Secrets（GitHub）
 
 | Secret | 用途 |

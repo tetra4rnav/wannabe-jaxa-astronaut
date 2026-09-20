@@ -1,10 +1,43 @@
+# AI / search crawlers: allow everything (no Disallow).
+# Mirrors: /llms.txt, /llms-full.txt, /llms-small.txt, /*.md, /news.json, /corpus/
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: bingbot
+Allow: /
+
 User-agent: *
 Allow: /
 
-# LLM / agent mirrors
-Allow: /llms.txt
-Allow: /llms-full.txt
-Allow: /llms-small.txt
-Allow: /*.md
-Allow: /news.json
-Allow: /corpus/
+Sitemap: https://wannabe-jaxa-astronaut.jh1cid.workers.dev/sitemap-index.xml
