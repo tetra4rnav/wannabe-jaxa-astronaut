@@ -1,8 +1,12 @@
 ---
 import { FactCheckHistoryClient } from './FactCheckHistoryClient';
 
-const id = Astro.locals.starlightRoute?.id ?? '';
-const skip = !id || id === 'index' || id === 'about' || id.startsWith('_template');
+interface Props {
+	docsId: string;
+}
+
+const { docsId } = Astro.props;
+const skip = !docsId || docsId === 'index' || docsId === 'about' || docsId.startsWith('_template');
 ---
 
-{!skip && <FactCheckHistoryClient client:load docsId={id} />}
+{!skip && <FactCheckHistoryClient client:load docsId={docsId} />}

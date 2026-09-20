@@ -9,7 +9,7 @@ Need a static public wiki and separate scheduled AI / fetch work without mixing 
 
 ## Decision
 
-- Public site: **Cloudflare Pages** + Astro Starlight (static).
+- Public site: **Cloudflare Pages** + Astro (static). UI stack: [ADR-20260920-4](./ADR-20260920-4-astro-shadcn-ui.md).
 - Jobs: **Worker + Workflows** (FetchNews, tagging, ingest, ProposeWiki, FactCheck).
 - Do **not** migrate Pages to Workers Static Assets.
 - **Workers paid plan** is required for cron / Workflows / AI / Vectorize.

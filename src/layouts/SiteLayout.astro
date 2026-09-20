@@ -1,0 +1,125 @@
+---
+import '../styles/global.css';
+import { SiteChrome } from '../components/SiteChrome';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../lib/site';
+import { getSidebarNav, slugToMdHref } from '../lib/docs';
+
+type JsonLd = Record<string, unknown>;
+
+interface Props {
+	title: string;
+	description?: string;
+	docsId?: string;
+	skipMdAlternate?: boolean;
+	heading?: boolean;
+}
+
+const {
+	title,
+	description = SITE_DESCRIPTION,
+	docsId,
+	skipMdAlternate = false,
+	heading = true,
+} = Astro.props;
+
+const groups = await getSidebarNav();
+const site = (Astro.site?.origin ?? 'https://wannabe-jaxa-astronaut.diaphana.io').replace(/\/$/, '');
+const pageUrl = new URL(Astro.url.pathname, `${site}/`).href;
+const isHome = Astro.url.pathname === '/';
+const mdHref = docsId ? slugToMdHref(docsId === 'index' ? '' : docsId) : undefined;
+
+const graphs: JsonLd[] = [];
+if (isHome) {
+	graphs.push({
+		'@context': 'https://schema.org',
+		'@type': 'WebSite',
+		name: SITE_TITLE,
+		url: `${site}/`,
+		description,
+		inLanguage: 'ja',
+	});
+} else if (docsId && docsId !== 'sitemap') {
+	graphs.push({
+		'@context': 'https://schema.org',
+		'@type': 'Article',
+		headline: title,
+		description,
+		inLanguage: 'ja',
+		url: pageUrl,
+		mainEntityOfPage: pageUrl,
+	});
+}
+---
+
+<!doctype html>
+<html lang="ja">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="robots" content="index, follow" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{isHome ? title : `${title} | ${SITE_TITLE}`}</title>
+		<meta name="description" content={description} />
+		<link rel="canonical" href={pageUrl} />
+		{!skipMdAlternate && mdHref && (
+			<link rel="alternate" type="text/markdown" title="Markdown" href={mdHref} />
+		)}
+		<link rel="alternate" type="text/plain" title="llms.txt" href="/llms.txt" />
+		{
+			graphs.map((g) => (
+				<script type="application/ld+json" set:html={JSON.stringify(g)} />
+			))
+		}
+		<script is:inline>
+			(function () {
+				const stored = typeof localStorage !== 'undefined' && localStorage.getItem('theme');
+				const theme =
+					stored ||
+					(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+				document.documentElement.classList.toggle('dark', theme === 'dark');
+				if (typeof localStorage !== 'undefined') {
+					new MutationObserver(function () {
+						const isDark = document.documentElement.classList.contains('dark');
+						localStorage.setItem('theme', isDark ? 'dark' : 'light');
+					}).observe(document.documentElement, {
+						attributes: true,
+						attributeFilter: ['class'],
+					});
+				}
+				const row = document.cookie.split('; ').find(function (c) {
+					return c.indexOf('sidebar_state=') === 0;
+				});
+				const open = row ? row.split('=')[1] !== 'false' : true;
+				const mobile = window.matchMedia('(max-width: 767px)').matches;
+				document.documentElement.style.setProperty(
+					'--sidebar-current-width',
+					mobile || !open ? '0px' : '16rem',
+				);
+			})();
+		</script>
+	</head>
+	<body>
+		<SiteChrome client:load groups={groups} currentPath={Astro.url.pathname} />
+		<div class="flex min-h-svh flex-col bg-background pt-14 transition-[padding] md:pl-[var(--sidebar-current-width)]">
+			<main class="mx-auto w-full max-w-5xl flex-1 px-4 py-6 md:px-8">
+				{heading && <h1 class="mb-4 text-2xl font-semibold tracking-tight">{title}</h1>}
+				<slot />
+			</main>
+			<footer class="border-t px-4 py-4 text-sm text-muted-foreground md:px-8">
+				<p>
+					{!skipMdAlternate && mdHref && (
+						<>
+							<a href={mdHref}>このページの Markdown</a>
+							{' · '}
+						</>
+					)}
+					<a href="/llms.txt">llms.txt</a>
+					{' · '}
+					<a href="/sitemap/">サイトマップ</a>
+					{' · '}
+					<a href="/corpus/manifest.json">RAG コーパス</a>
+				</p>
+			</footer>
+		</div>
+	</body>
+</html>

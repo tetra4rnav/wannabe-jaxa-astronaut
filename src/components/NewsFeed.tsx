@@ -65,13 +65,4 @@ export function NewsFeed({ showAll = false, limit, showMeta = true }: Props) {
 	);
 }
 
-export function NewsExcerptFeed() {
-	return (
-		<div>
-			<p className="mt-hint text-sm text-muted-foreground">
-				タイトル・短文は機械翻訳の場合があります。詳細は <a href="/news/">ニュース一覧</a>。
-			</p>
-			<NewsFeed showAll={false} limit={5} showMeta={false} />
-		</div>
-	);
-}
+

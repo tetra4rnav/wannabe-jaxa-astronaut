@@ -1,0 +1,60 @@
+---
+import { render } from 'astro:content';
+import SiteLayout from '../layouts/SiteLayout.astro';
+import SiteDisclaimer from '../components/SiteDisclaimer.astro';
+import FactCheckHistory from '../components/FactCheckHistory.astro';
+import { WikiMermaid } from '../components/WikiMermaid';
+import {
+	docIdToSlug,
+	getPublishedDocs,
+	slugToHref,
+} from '../lib/docs';
+
+export async function getStaticPaths() {
+	const docs = await getPublishedDocs();
+	return docs.map((entry) => {
+		const slug = docIdToSlug(entry.id);
+		return {
+			params: { slug },
+			props: { entry, docsId: slug },
+		};
+	});
+}
+
+const { entry, docsId } = Astro.props;
+const { Content } = await render(entry);
+const showFactCheck = docsId.includes('/');
+---
+
+<SiteLayout
+	title={entry.data.title}
+	description={entry.data.description}
+	docsId={docsId}
+>
+	<SiteDisclaimer>
+		本サイトは JAXA・宇宙機関の公式サイトではありません。Wiki は公式一次資料のみを根拠にしています。
+	</SiteDisclaimer>
+	{entry.data.sources?.length ? (
+		<p class="mb-4 text-sm text-muted-foreground">
+			出典:{' '}
+			{entry.data.sources.map((url, i) => (
+				<>
+					{i > 0 ? ' · ' : ''}
+					<a href={url} rel="noopener noreferrer">
+						{new URL(url).hostname}
+					</a>
+				</>
+			))}
+		</p>
+	) : null}
+	<div class="wiki-prose">
+		<Content />
+	</div>
+	{docsId === 'about' && <WikiMermaid client:idle />}
+	{showFactCheck && <FactCheckHistory docsId={docsId} />}
+	{docsId.includes('/') && (
+		<p class="mt-8 text-sm">
+			<a href={slugToHref(docsId.split('/')[0]!)}>← テーマ一覧</a>
+		</p>
+	)}
+</SiteLayout>

@@ -5,7 +5,6 @@ sources:
   - https://www.jaxa.jp/
 reviewed: "YYYY-MM-DD"
 draft: true
-pagefind: false
 ---
 
 <!--

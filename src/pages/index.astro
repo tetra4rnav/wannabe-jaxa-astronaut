@@ -1,0 +1,87 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import { NewsFeed } from '../components/NewsFeed';
+import SiteDisclaimer from '../components/SiteDisclaimer.astro';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../lib/site';
+
+const regions = [
+	{ id: 'all', label: 'すべて' },
+	{ id: 'japan', label: '日本' },
+	{ id: 'usa', label: '米国' },
+	{ id: 'europe', label: '欧州' },
+	{ id: 'spacex', label: 'SpaceX' },
+	{ id: 'russia', label: 'ロシア' },
+	{ id: 'china', label: '中国' },
+] as const;
+---
+
+<SiteLayout title={SITE_TITLE} description={SITE_DESCRIPTION} docsId="index">
+	<SiteDisclaimer>
+		本サイトは宇宙機関の公式サイトではありません。タイトル・短文の日本語は機械翻訳の場合があります。
+	</SiteDisclaimer>
+
+	<form class="news-filters" method="get">
+		<label class="text-sm">
+			地域
+			<select
+				name="region"
+				id="region"
+				class="ml-2 rounded-md border border-border bg-card px-2 py-1"
+			>
+				{regions.map((r) => (
+					<option value={r.id}>{r.label}</option>
+				))}
+			</select>
+		</label>
+		<label class="text-sm">
+			種別
+			<select
+				name="kind"
+				id="kind"
+				class="ml-2 rounded-md border border-border bg-card px-2 py-1"
+			>
+				<option value="all">すべて</option>
+				<option value="rss">RSS</option>
+				<option value="html-list">HTML一覧</option>
+				<option value="x">X</option>
+			</select>
+		</label>
+		<noscript><button type="submit">絞り込み</button></noscript>
+	</form>
+
+	<div id="news-list">
+		<NewsFeed client:load showAll />
+	</div>
+</SiteLayout>
+
+<script is:inline>
+	(function () {
+		const region = document.getElementById('region');
+		const kind = document.getElementById('kind');
+		const params = new URLSearchParams(location.search);
+		if (region && params.get('region')) region.value = params.get('region');
+		if (kind && params.get('kind')) kind.value = params.get('kind');
+		function apply() {
+			const r = region ? region.value : 'all';
+			const k = kind ? kind.value : 'all';
+			document.querySelectorAll('#news-list [data-region]').forEach(function (el) {
+				const okR = r === 'all' || el.getAttribute('data-region') === r;
+				const okK = k === 'all' || el.getAttribute('data-kind') === k;
+				el.hidden = !(okR && okK);
+			});
+			const qs = new URLSearchParams();
+			if (r !== 'all') qs.set('region', r);
+			if (k !== 'all') qs.set('kind', k);
+			const next = qs.toString();
+			history.replaceState(null, '', next ? '?' + next : location.pathname);
+		}
+		region && region.addEventListener('change', apply);
+		kind && kind.addEventListener('change', apply);
+		const list = document.getElementById('news-list');
+		if (list) {
+			const obs = new MutationObserver(apply);
+			obs.observe(list, { childList: true, subtree: true });
+		}
+		apply();
+	})();
+</script>
