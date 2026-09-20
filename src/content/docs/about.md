@@ -16,7 +16,7 @@ description: 非公式であること、収集方法、Wikiの出典方針、エ
 - 必須 frontmatter: `title`、`description`、`sources`（公式 URL 配列）、`reviewed`。
 - ファクトチェック履歴は `src/data/fact-checks/<docs-id>.json` に追記のみ（本文と分離）。
 
-許可ドメインは [`src/config/official-domains.ts`](https://github.com/jh1cid/wannabe-jaxa-astronaut/blob/main/src/config/official-domains.ts) を参照。
+許可ドメインは [`src/config/official-domains.ts`](https://github.com/tetra4rnav/wannabe-jaxa-astronaut/blob/main/src/config/official-domains.ts) を参照。
 
 ## テーマ（フォルダ）の足し方
 
@@ -34,7 +34,7 @@ description: 非公式であること、収集方法、Wikiの出典方針、エ
 
 ## LLM / エージェント向け
 
-- 契約: リポジトリ直下の [AGENTS.md](https://github.com/jh1cid/wannabe-jaxa-astronaut/blob/main/AGENTS.md)
+- 契約: リポジトリ直下の [AGENTS.md](https://github.com/tetra4rnav/wannabe-jaxa-astronaut/blob/main/AGENTS.md)
 - 正本: `src/content/docs/**/*.md`
 - 各ページの `.md` 鏡像、`/llms.txt`、`/news.md`、`/news.json`
 - 外部 RAG: `/corpus/*.jsonl`（サイト内 Vectorize / チャット API はありません）

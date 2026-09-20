@@ -22,7 +22,7 @@ export default defineConfig({
 				{
 					icon: 'github',
 					label: 'GitHub',
-					href: 'https://github.com/jh1cid/wannabe-jaxa-astronaut',
+					href: 'https://github.com/tetra4rnav/wannabe-jaxa-astronaut',
 				},
 			],
 			customCss: ['./src/styles/custom.css'],
@@ -63,7 +63,7 @@ export default defineConfig({
 					optionalLinks: [
 						{
 							label: 'エージェント契約 (AGENTS.md)',
-							url: 'https://github.com/jh1cid/wannabe-jaxa-astronaut/blob/main/AGENTS.md',
+							url: 'https://github.com/tetra4rnav/wannabe-jaxa-astronaut/blob/main/AGENTS.md',
 							description: 'Wiki の読み書き・監査ルール',
 						},
 						{

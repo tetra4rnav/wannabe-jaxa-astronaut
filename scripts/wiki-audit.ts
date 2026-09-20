@@ -83,7 +83,7 @@ function main() {
 			// Folder indexes / about / home: sources optional
 			const urls = extractUrls(body);
 			for (const url of urls) {
-				if (!isOfficialUrl(url) && !url.includes('github.com/jh1cid/wannabe-jaxa-astronaut')) {
+				if (!isOfficialUrl(url) && !url.includes('github.com/tetra4rnav/wannabe-jaxa-astronaut')) {
 					// Internal links ok; external must be official on wiki pages that aren't news
 					if (url.startsWith('http') && !url.includes('localhost')) {
 						// Allow github repo links and relative already filtered
@@ -111,7 +111,7 @@ function main() {
 		}
 
 		for (const url of extractUrls(body)) {
-			if (!isOfficialUrl(url) && !url.includes('github.com/jh1cid/wannabe-jaxa-astronaut')) {
+			if (!isOfficialUrl(url) && !url.includes('github.com/tetra4rnav/wannabe-jaxa-astronaut')) {
 				issues.push({ file: rel, message: `本文の非公式リンク: ${url}` });
 			}
 		}

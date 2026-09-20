@@ -22,7 +22,7 @@ export async function fetchText(url: string, init?: RequestInit): Promise<string
 			...init,
 			headers: {
 				Accept: '*/*',
-				'User-Agent': 'wannabe-jaxa-astronaut-news-bot/1.0 (+https://github.com/jh1cid/wannabe-jaxa-astronaut)',
+				'User-Agent': 'wannabe-jaxa-astronaut-news-bot/1.0 (+https://github.com/tetra4rnav/wannabe-jaxa-astronaut)',
 				...(init?.headers ?? {}),
 			},
 		});
