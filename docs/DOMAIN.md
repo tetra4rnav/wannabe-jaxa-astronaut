@@ -1,0 +1,33 @@
+# Domain model
+
+English overview of the core entities. Terms in [GLOSSARY.md](./GLOSSARY.md). Boundaries in [BOUNDED_CONTEXT.md](./BOUNDED_CONTEXT.md).
+
+## Entities
+
+| Entity | Role |
+| --- | --- |
+| **Project** | Human-seeded program or theme (ISS / きぼう, Artemis, …). Catalog is the only allowed project namespace for classifiers. |
+| **Event** | Something that happened on a project at `occurred_at` (news item, official page milestone, paper abstract, wiki page). |
+| **News item** | Collected official feed / X post. Displayed in project timelines; not a wiki citation. |
+| **Wiki page** | Human-written Markdown under `src/content/docs/`. Official URLs only in `sources`. |
+| **Proposal** | LLM suggestion to add or update a wiki page, grounded in earlier official events on the same project. Not committed as wiki body. |
+| **Fact-check entry** | Append-only audit of a wiki page against its sources. Does not rewrite the page. |
+| **Document (ingest)** | Queued official URL for corpus ingest (hash, status). Chunk text lives in object storage after ingest. |
+
+## Relationships
+
+```text
+Project 1──* Event
+News item ──(classified as)──* Event (kind=news)
+Official / paper URL ──* Event (kind=official|paper)
+Wiki page ──(optional)── Project via wiki_docs_id
+News item ──triggers── Proposal ──targets── Wiki page
+Wiki page ──has──* Fact-check entry
+```
+
+## Invariants
+
+1. A proposal may only cite allowlisted official URLs that appear in retrieved chunks for the **same** project with `occurred_at` on or before the news date.
+2. The LLM must not invent project slugs outside the catalog.
+3. News text is never copied into wiki Markdown as the authoritative body.
+4. Fact-check jobs append history only; they never overwrite wiki files.
