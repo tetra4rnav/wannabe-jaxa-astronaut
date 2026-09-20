@@ -37,9 +37,9 @@ Emergency: `npx wrangler pages deploy ./dist --project-name=wannabe-jaxa-astrona
 
 Do **not** enable Bot Fight Mode or AI crawler blocking; [`public/robots.txt`](../../public/robots.txt) is allow-all.
 
-Pages Functions (`functions/`) serve live `/news.json`, `/news.md`, and `/fact-checks/:id.json` from KV binding `STORE`. When KV is empty they fall back to GitHub raw `src/data/news.json`.
+Pages Functions (`functions/`) serve live `/news.json`, `/news.md`, and `/fact-checks/:id.json` from KV binding `STORE`. Project timelines use D1 binding `DB` via `/projects/catalog.json` and `/projects/:slug/timeline.json`. When KV is empty, news falls back to GitHub raw `src/data/news.json`.
 
-Bind the same KV namespace on the Pages project (`STORE` → `wannabe-jaxa-store`).
+Bind on the Pages project: KV `STORE` → `wannabe-jaxa-store`, D1 `DB` → `wannabe-jaxa-db`.
 
 ### Jobs Worker
 
@@ -48,9 +48,10 @@ Bind the same KV namespace on the Pages project (`STORE` → `wannabe-jaxa-store
 | Config | [`worker/wrangler.jsonc`](../../worker/wrangler.jsonc) |
 | Name | `wannabe-jaxa-jobs` |
 | Deploy | `npm run deploy:jobs` |
-| Manual run | `POST /run` with `Authorization: Bearer $RUN_SECRET` and JSON `{"job":"fetch-news"|"fact-check"}` |
+| Manual run | `POST /run` with `Authorization: Bearer $RUN_SECRET` and JSON `{"job":"fetch-news"|"fact-check"|"ingest-corpus"}` |
+| D1 migrate | `npx wrangler d1 migrations apply wannabe-jaxa-db --remote -c worker/wrangler.jsonc` |
 
-Shared pipeline: [`shared/news/`](../../shared/news/) (no filesystem). Production news / fact-check JSON live in KV (`news:file`, `news:md`, `fact-check:{docsId}`).
+Shared pipeline: [`shared/news/`](../../shared/news/) (no filesystem). Timeline ingest: [`shared/timeline/`](../../shared/timeline/). Production news / fact-check JSON live in KV (`news:file`, `news:md`, `fact-check:{docsId}`). D1 holds projects / documents / events; R2 `wannabe-jaxa-chunks` + Vectorize `wannabe-jaxa-vectors` hold embeddings.
 
 ## Secrets & env
 
@@ -79,12 +80,13 @@ Workers AI uses the `AI` binding (no account REST token required on the Worker).
 
 | Workflow | Cron (UTC) | Writes |
 | --- | --- | --- |
-| `FetchNewsWorkflow` | `0 */6 * * *` | KV `news:file`, `news:md` |
+| `FetchNewsWorkflow` | `0 */6 * * *` | KV `news:file`, `news:md`; D1 `events` (tagged projects) |
 | `FactCheckWorkflow` | `0 3 * * 1` | KV `fact-check:{docsId}` |
+| `IngestCorpusWorkflow` | `0 */12 * * *` | D1 documents/events; R2 chunks; Vectorize upserts |
 
 CI (`.github/workflows/ci.yml`) still runs audit + build on push/PR. Scheduled GitHub Actions for news / fact-check were removed.
 
-Intended later: IngestCorpus `0 */12 * * *` (project-timeline RAG).
+Human-owned project catalog: [`src/config/projects.ts`](../../src/config/projects.ts). Official seed URLs: [`src/config/corpus-seeds.ts`](../../src/config/corpus-seeds.ts).
 
 ## Related
 

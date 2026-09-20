@@ -11,6 +11,8 @@ import {
 } from '../../../shared/news/format.ts';
 import { emptyNewsFile, runFetchNews } from '../../../shared/news/run-fetch-news.ts';
 import type { NewsSecrets } from '../../../shared/news/secrets.ts';
+import { classifyNewsItem } from '../../../shared/timeline/classify.ts';
+import { syncProjectsTable, upsertEvent } from '../../../shared/timeline/db.ts';
 import type { Env } from '../env.ts';
 
 const GITHUB_NEWS_FALLBACK =
@@ -43,6 +45,10 @@ function secretsFromEnv(env: Env): NewsSecrets {
 
 export class FetchNewsWorkflow extends WorkflowEntrypoint<Env> {
 	async run(_event: WorkflowEvent<unknown>, step: WorkflowStep) {
+		await step.do('sync projects', async () => {
+			await syncProjectsTable(this.env.DB);
+		});
+
 		const existing = await step.do('load existing news', async () => {
 			return loadExisting(this.env.STORE);
 		});
@@ -53,10 +59,37 @@ export class FetchNewsWorkflow extends WorkflowEntrypoint<Env> {
 			async () => runFetchNews(existing, secretsFromEnv(this.env)),
 		);
 
+		const tagged = await step.do('tag projects', async () => {
+			const items = merged.items.map((item) => ({
+				...item,
+				projectSlugs: item.projectSlugs?.length
+					? item.projectSlugs
+					: classifyNewsItem(item),
+			}));
+			return { ...merged, items } satisfies NewsFile;
+		});
+
+		await step.do('write events', async () => {
+			for (const item of tagged.items) {
+				const slugs = item.projectSlugs?.length ? item.projectSlugs : ['unassigned'];
+				for (const slug of slugs) {
+					await upsertEvent(this.env.DB, {
+						projectSlug: slug,
+						kind: 'news',
+						occurredAt: item.publishedAt,
+						url: item.url,
+						title: item.titleJa || item.titleOriginal,
+						newsId: item.id,
+					});
+				}
+			}
+			return tagged.items.length;
+		});
+
 		await step.do('write kv', async () => {
-			await this.env.STORE.put(NEWS_KV_KEY, JSON.stringify(merged));
-			await this.env.STORE.put(NEWS_MD_KV_KEY, newsFileToMarkdown(merged));
-			return { count: merged.items.length, updatedAt: merged.updatedAt };
+			await this.env.STORE.put(NEWS_KV_KEY, JSON.stringify(tagged));
+			await this.env.STORE.put(NEWS_MD_KV_KEY, newsFileToMarkdown(tagged));
+			return { count: tagged.items.length, updatedAt: tagged.updatedAt };
 		});
 	}
 }

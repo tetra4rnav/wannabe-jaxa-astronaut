@@ -49,6 +49,7 @@ export default defineConfig({
 					items: [
 						{ label: 'ホーム', slug: '' },
 						{ label: 'このサイトについて', slug: 'about' },
+						{ label: 'プロジェクト時系列', link: '/projects/' },
 						{ label: 'サイトマップ', link: '/sitemap/' },
 					],
 				},

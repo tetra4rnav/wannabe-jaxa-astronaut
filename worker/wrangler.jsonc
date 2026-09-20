@@ -19,6 +19,26 @@
 			"preview_id": "40c541c4592240a68f2311f1c018f355"
 		}
 	],
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "wannabe-jaxa-db",
+			"database_id": "4f5ba07d-18bc-49c4-a664-95ab92206770",
+			"migrations_dir": "migrations"
+		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "CHUNKS",
+			"bucket_name": "wannabe-jaxa-chunks"
+		}
+	],
+	"vectorize": [
+		{
+			"binding": "VECTORIZE",
+			"index_name": "wannabe-jaxa-vectors"
+		}
+	],
 	"workflows": [
 		{
 			"name": "wannabe-fetch-news",
@@ -31,6 +51,12 @@
 			"binding": "FACT_CHECK",
 			"class_name": "FactCheckWorkflow",
 			"schedules": ["0 3 * * 1"]
+		},
+		{
+			"name": "wannabe-ingest-corpus",
+			"binding": "INGEST_CORPUS",
+			"class_name": "IngestCorpusWorkflow",
+			"schedules": ["0 */12 * * *"]
 		}
 	]
 }

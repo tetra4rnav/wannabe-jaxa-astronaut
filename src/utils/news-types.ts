@@ -19,6 +19,8 @@ export interface NewsItem {
 	/** Present for X posts */
 	accountHandle?: string;
 	machineTranslated: boolean;
+	/** Catalog project slugs from classifier (includes unassigned) */
+	projectSlugs?: string[];
 }
 
 export interface NewsFile {
