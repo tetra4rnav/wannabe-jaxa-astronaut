@@ -1,0 +1,121 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import news from '../data/news.json';
+import type { NewsItem } from '../utils/news-types';
+
+const items = news.items as NewsItem[];
+const regions = [
+	{ id: 'all', label: 'すべて' },
+	{ id: 'japan', label: '日本' },
+	{ id: 'usa', label: '米国' },
+	{ id: 'europe', label: '欧州' },
+	{ id: 'spacex', label: 'SpaceX' },
+	{ id: 'russia', label: 'ロシア' },
+	{ id: 'china', label: '中国' },
+] as const;
+---
+
+<StarlightPage
+	frontmatter={{
+		title: 'ニュース',
+		description: '各国公式フィードと公式Xの原語＋日本語対照一覧（機械翻訳あり）。',
+	}}
+>
+	<aside class="site-disclaimer" role="note">
+		<strong>非公式:</strong> 本サイトは宇宙機関の公式サイトではありません。タイトル・短文の日本語は機械翻訳の場合があります。
+	</aside>
+
+	<p class="mt-hint">
+		X API: {news.xConfigured ? '設定済み' : <strong>未設定</strong>}
+		（未設定時は RSS / HTML のみ）。最終更新: <time datetime={news.updatedAt}>{news.updatedAt}</time>
+		· <a href="/news.md">news.md</a> · <a href="/news.json">news.json</a>
+	</p>
+
+	<form class="news-filters" method="get">
+		<label>
+			地域
+			<select name="region" id="region">
+				{regions.map((r) => (
+					<option value={r.id}>{r.label}</option>
+				))}
+			</select>
+		</label>
+		<label>
+			種別
+			<select name="kind" id="kind">
+				<option value="all">すべて</option>
+				<option value="rss">RSS</option>
+				<option value="html-list">HTML一覧</option>
+				<option value="x">X</option>
+			</select>
+		</label>
+		<noscript><button type="submit">絞り込み</button></noscript>
+	</form>
+
+	<div id="news-list">
+		{
+			items.length === 0 ? (
+				<p>ニュースはまだありません。<code>npm run fetch:news</code> または GitHub Actions で取得してください。</p>
+			) : (
+				items.map((item) => (
+					<article
+						class="news-item"
+						data-region={item.region}
+						data-kind={item.kind}
+					>
+						<p class="news-meta">
+							{item.sourceLabel}
+							{item.accountHandle ? ` (@${item.accountHandle})` : ''} · {item.region} ·{' '}
+							{item.kind} · <time datetime={item.publishedAt}>{item.publishedAt.slice(0, 10)}</time>
+							{item.machineTranslated ? ' · 機械翻訳' : ''}
+						</p>
+						<div class="news-pair">
+							<div class="news-col" lang={item.lang}>
+								<div class="label">原語 ({item.lang})</div>
+								<strong>{item.titleOriginal}</strong>
+								<p>{item.summaryOriginal}</p>
+							</div>
+							<div class="news-col" lang="ja">
+								<div class="label">日本語</div>
+								<strong>{item.titleJa}</strong>
+								<p>{item.summaryJa}</p>
+							</div>
+						</div>
+						<p>
+							<a href={item.url} rel="noopener noreferrer">
+								原文・公式リンク
+							</a>
+						</p>
+					</article>
+				))
+			)
+		}
+	</div>
+
+	<script is:inline>
+		(function () {
+			const region = document.getElementById('region');
+			const kind = document.getElementById('kind');
+			const params = new URLSearchParams(location.search);
+			if (region && params.get('region')) region.value = params.get('region');
+			if (kind && params.get('kind')) kind.value = params.get('kind');
+			function apply() {
+				const r = region ? region.value : 'all';
+				const k = kind ? kind.value : 'all';
+				document.querySelectorAll('.news-item').forEach(function (el) {
+					const okR = r === 'all' || el.getAttribute('data-region') === r;
+					const okK = k === 'all' || el.getAttribute('data-kind') === k;
+					el.hidden = !(okR && okK);
+				});
+				const qs = new URLSearchParams();
+				if (r !== 'all') qs.set('region', r);
+				if (k !== 'all') qs.set('kind', k);
+				const next = qs.toString();
+				history.replaceState(null, '', next ? '?' + next : location.pathname);
+			}
+			region && region.addEventListener('change', apply);
+			kind && kind.addEventListener('change', apply);
+			apply();
+		})();
+	</script>
+</StarlightPage>

@@ -1,0 +1,11 @@
+---
+import Default from '@astrojs/starlight/components/MarkdownContent.astro';
+import FactCheckHistory from './FactCheckHistory.astro';
+---
+
+<aside class="site-disclaimer" role="note">
+	<strong>非公式:</strong> 本サイトは JAXA・宇宙機関の公式サイトではありません。Wiki
+	は公式一次資料のみを根拠にしています。
+</aside>
+<Default><slot /></Default>
+<FactCheckHistory />

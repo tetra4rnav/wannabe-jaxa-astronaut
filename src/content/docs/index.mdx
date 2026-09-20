@@ -1,0 +1,37 @@
+---
+title: JAXA宇宙飛行士志望Wiki
+description: JAXA非公式。公式出典のWikiと、各国公式ニュースの原語＋日本語対照。
+template: splash
+hero:
+  title: JAXA宇宙飛行士志望Wiki
+  tagline: 非公式。政策・飛行士・研究テーマを公式一次資料だけでまとめ、ニュースは原語と日本語を並べます。
+  actions:
+    - text: 最新ニュース
+      link: /news/
+      variant: primary
+    - text: このサイトについて
+      link: /about/
+      variant: minimal
+---
+
+import NewsExcerpt from '../../components/NewsExcerpt.astro';
+
+<aside class="site-disclaimer" role="note">
+	<strong>非公式:</strong> 本サイトは JAXA・宇宙機関の公式サイトではありません。
+</aside>
+
+## Wiki テーマ
+
+フォルダを増やすとサイドバーとここに自動で載ります（`src/content/docs/<slug>/`）。
+
+<div class="folder-grid">
+	<a href="/policy/"><strong>政策・制度</strong><br /><span class="mt-hint">宇宙基本計画・予算・国際枠組み</span></a>
+	<a href="/astronauts/"><strong>宇宙飛行士</strong><br /><span class="mt-hint">一覧・インタビューテーマ・個人ページ</span></a>
+	<a href="/society/"><strong>社会学</strong><br /><span class="mt-hint">月面社会など</span></a>
+	<a href="/physiology/"><strong>生理学</strong><br /><span class="mt-hint">微小重力など</span></a>
+	<a href="/satellites/"><strong>人工衛星</strong><br /><span class="mt-hint">概要と公式資料</span></a>
+</div>
+
+## 最新ニュース（抜粋）
+
+<NewsExcerpt />

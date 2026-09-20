@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+# LLM / agent mirrors
+Allow: /llms.txt
+Allow: /llms-full.txt
+Allow: /llms-small.txt
+Allow: /*.md
+Allow: /news.json
+Allow: /corpus/

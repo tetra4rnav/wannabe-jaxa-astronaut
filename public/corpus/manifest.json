@@ -1,0 +1,12 @@
+{
+  "generatedAt": "2026-09-20T17:36:57.851Z",
+  "schemaVersion": 1,
+  "chunkCount": 51,
+  "wikiCount": 51,
+  "newsCount": 0,
+  "files": [
+    "chunks.jsonl",
+    "wiki.jsonl",
+    "news.jsonl"
+  ]
+}

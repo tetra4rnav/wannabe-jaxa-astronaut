@@ -1,0 +1,52 @@
+---
+import news from '../data/news.json';
+import type { NewsItem } from '../utils/news-types';
+
+const items = (news.items as NewsItem[]).slice(0, 5);
+---
+
+<p class="mt-hint">
+	タイトル・短文は機械翻訳の場合があります。詳細は <a href="/news/">ニュース一覧</a>。
+	{!news.xConfigured && (
+		<>
+			{' '}
+			（X API: <strong>未設定</strong>）
+		</>
+	)}
+</p>
+
+{
+	items.length === 0 ? (
+		<p>
+			まだニュースがありません。GitHub Actions（6時間ごと）または{' '}
+			<code>npm run fetch:news</code> で取得します。
+		</p>
+	) : (
+		items.map((item) => (
+			<article>
+				<p class="news-meta">
+					{item.sourceLabel} · {item.region} · {item.kind} ·{' '}
+					<time datetime={item.publishedAt}>{item.publishedAt.slice(0, 10)}</time>
+					{item.machineTranslated ? ' · 機械翻訳' : ''}
+				</p>
+				<div class="news-pair">
+					<div class="news-col" lang={item.lang}>
+						<div class="label">原語 ({item.lang})</div>
+						<strong>{item.titleOriginal}</strong>
+						<p>{item.summaryOriginal}</p>
+					</div>
+					<div class="news-col" lang="ja">
+						<div class="label">日本語</div>
+						<strong>{item.titleJa}</strong>
+						<p>{item.summaryJa}</p>
+					</div>
+				</div>
+				<p>
+					<a href={item.url} rel="noopener noreferrer">
+						原文・公式リンク
+					</a>
+				</p>
+			</article>
+		))
+	)
+}

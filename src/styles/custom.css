@@ -1,0 +1,116 @@
+:root {
+	--sl-color-accent-low: #0a1f3d;
+	--sl-color-accent: #3d7cff;
+	--sl-color-accent-high: #a8c7ff;
+	--sl-color-white: #f2f6ff;
+	--sl-color-gray-1: #e4ebf7;
+	--sl-color-gray-2: #c5d0e6;
+	--sl-color-gray-3: #8b9bb8;
+	--sl-color-gray-4: #4a5a78;
+	--sl-color-gray-5: #243147;
+	--sl-color-gray-6: #121a28;
+	--sl-color-black: #070b12;
+	--sl-color-bg-nav: #0a1220;
+	--sl-color-bg-sidebar: #0b1422;
+	--jaxa-disclaimer: #f0b429;
+}
+
+:root[data-theme='light'] {
+	--sl-color-accent-low: #d6e4ff;
+	--sl-color-accent: #1a56c9;
+	--sl-color-accent-high: #0b2f6b;
+	--sl-color-bg-nav: #f5f8ff;
+	--sl-color-bg-sidebar: #eef3fb;
+}
+
+.site-disclaimer {
+	border-inline-start: 3px solid var(--jaxa-disclaimer);
+	padding: 0.6rem 0.9rem;
+	margin: 0 0 1.25rem;
+	background: color-mix(in oklab, var(--jaxa-disclaimer) 12%, transparent);
+	font-size: 0.9rem;
+}
+
+.folder-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+	gap: 1rem;
+	margin: 1.5rem 0;
+}
+
+.folder-grid a {
+	display: block;
+	padding: 1rem 1.1rem;
+	border: 1px solid var(--sl-color-gray-5);
+	border-radius: 0.4rem;
+	text-decoration: none;
+	color: inherit;
+	transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.folder-grid a:hover {
+	border-color: var(--sl-color-accent);
+	transform: translateY(-2px);
+}
+
+.news-pair {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 1rem;
+	margin: 0.75rem 0 1.25rem;
+}
+
+@media (max-width: 48rem) {
+	.news-pair {
+		grid-template-columns: 1fr;
+	}
+}
+
+.news-col {
+	border: 1px solid var(--sl-color-gray-5);
+	border-radius: 0.35rem;
+	padding: 0.75rem 0.9rem;
+}
+
+.news-col .label {
+	font-size: 0.75rem;
+	opacity: 0.75;
+	margin-bottom: 0.35rem;
+}
+
+.news-meta {
+	font-size: 0.85rem;
+	opacity: 0.8;
+	margin-bottom: 0.35rem;
+}
+
+.fact-check {
+	margin-top: 2.5rem;
+	padding-top: 1rem;
+	border-top: 1px solid var(--sl-color-gray-5);
+}
+
+.fact-check h2 {
+	font-size: 1.1rem;
+}
+
+.fact-check ul {
+	padding-inline-start: 1.1rem;
+}
+
+.news-filters {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem 1rem;
+	margin: 1rem 0 1.5rem;
+	align-items: center;
+}
+
+.news-filters label {
+	font-size: 0.9rem;
+}
+
+.mt-hint {
+	font-size: 0.85rem;
+	opacity: 0.8;
+}
