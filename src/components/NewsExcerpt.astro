@@ -5,7 +5,7 @@ import type { NewsItem } from '../utils/news-types';
 const items = (news.items as NewsItem[]).slice(0, 5);
 ---
 
-<p class="mb-4 text-sm text-[hsl(var(--muted-foreground))]">
+<p class="mb-4 text-sm text-muted-foreground">
 	タイトル・短文は機械翻訳の場合があります。詳細は <a href="/news/">ニュース一覧</a>。
 	{!news.xConfigured && (
 		<>
@@ -17,57 +17,57 @@ const items = (news.items as NewsItem[]).slice(0, 5);
 
 {
 	items.length === 0 ? (
-		<p class="text-sm text-[hsl(var(--muted-foreground))]">
+		<p class="text-sm text-muted-foreground">
 			まだニュースがありません。<code>npm run fetch:news</code> で取得します。
 		</p>
 	) : (
 		<div class="flex flex-col gap-4">
 			{items.map((item) => (
 				<article
-					class="overflow-hidden rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-sm"
+					class="overflow-hidden rounded-lg border border-border bg-card text-card-foreground shadow-sm"
 					data-region={item.region}
 					data-kind={item.kind}
 				>
 					<header class="flex flex-col gap-2 p-4 pb-0">
 						<div class="flex flex-wrap gap-2">
-							<span class="inline-flex rounded-md bg-[hsl(var(--secondary))] px-2 py-0.5 text-xs">
+							<span class="inline-flex rounded-md bg-secondary px-2 py-0.5 text-xs text-secondary-foreground">
 								{item.sourceLabel}
 							</span>
-							<span class="inline-flex rounded-md border border-[hsl(var(--border))] px-2 py-0.5 text-xs">
+							<span class="inline-flex rounded-md border border-border px-2 py-0.5 text-xs">
 								{item.region}
 							</span>
-							<span class="inline-flex rounded-md border border-[hsl(var(--border))] px-2 py-0.5 text-xs">
+							<span class="inline-flex rounded-md border border-border px-2 py-0.5 text-xs">
 								{item.kind}
 							</span>
 							{item.machineTranslated ? (
-								<span class="inline-flex rounded-md bg-amber-700/80 px-2 py-0.5 text-xs text-amber-50">
+								<span class="inline-flex rounded-md border border-amber-500/50 px-2 py-0.5 text-xs text-amber-200">
 									機械翻訳
 								</span>
 							) : null}
 						</div>
-						<p class="text-xs text-[hsl(var(--muted-foreground))]">
+						<p class="text-xs text-muted-foreground">
 							<time datetime={item.publishedAt}>{item.publishedAt.slice(0, 10)}</time>
 						</p>
 					</header>
 					<div class="grid gap-4 p-4 md:grid-cols-2">
 						<div lang={item.lang}>
-							<p class="mb-1 text-xs uppercase tracking-wide text-[hsl(var(--muted-foreground))]">
+							<p class="mb-1 text-xs uppercase tracking-wide text-muted-foreground">
 								原語 ({item.lang})
 							</p>
 							<strong class="text-sm">{item.titleOriginal}</strong>
-							<p class="mt-2 text-sm text-[hsl(var(--muted-foreground))]">{item.summaryOriginal}</p>
+							<p class="mt-2 text-sm text-muted-foreground">{item.summaryOriginal}</p>
 						</div>
 						<div lang="ja">
-							<p class="mb-1 text-xs uppercase tracking-wide text-[hsl(var(--muted-foreground))]">
+							<p class="mb-1 text-xs uppercase tracking-wide text-muted-foreground">
 								日本語
 							</p>
 							<strong class="text-sm">{item.titleJa}</strong>
-							<p class="mt-2 text-sm text-[hsl(var(--muted-foreground))]">{item.summaryJa}</p>
+							<p class="mt-2 text-sm text-muted-foreground">{item.summaryJa}</p>
 						</div>
 					</div>
 					<p class="px-4 pb-4">
 						<a
-							class="text-sm text-[hsl(var(--primary))] underline-offset-4 hover:underline"
+							class="text-sm text-primary underline-offset-4 hover:underline"
 							href={item.url}
 							rel="noopener noreferrer"
 						>

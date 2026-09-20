@@ -29,24 +29,24 @@ const verdictClass: Record<string, string> = {
 				ファクトチェック履歴
 			</h2>
 			{entries.length === 0 ? (
-				<p class="text-sm text-[hsl(var(--muted-foreground))]">未実施</p>
+				<p class="text-sm text-muted-foreground">未実施</p>
 			) : (
 				<div class="flex flex-col gap-3">
 					{entries.map((e) => (
-						<div class="rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 shadow-sm">
+						<div class="rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm">
 							<div class="mb-2 flex items-center justify-between gap-2">
 								<strong class="text-sm">{e.date}</strong>
 								<span
 									class:list={[
 										'inline-flex rounded-md px-2 py-0.5 text-xs font-medium',
-										verdictClass[e.verdict] ?? 'bg-[hsl(var(--secondary))]',
+										verdictClass[e.verdict] ?? 'bg-secondary text-secondary-foreground',
 									]}
 								>
 									{verdictLabel[e.verdict] ?? e.verdict}
 								</span>
 							</div>
 							{e.model ? (
-								<p class="text-xs text-[hsl(var(--muted-foreground))]">{e.model}</p>
+								<p class="text-xs text-muted-foreground">{e.model}</p>
 							) : null}
 							{e.summary ? <p class="mt-2 text-sm">{e.summary}</p> : null}
 							{e.issues?.length ? (

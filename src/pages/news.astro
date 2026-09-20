@@ -27,7 +27,7 @@ const regions = [
 		本サイトは宇宙機関の公式サイトではありません。タイトル・短文の日本語は機械翻訳の場合があります。
 	</SiteDisclaimer>
 
-	<p class="mb-4 text-sm text-[hsl(var(--muted-foreground))]">
+	<p class="mb-4 text-sm text-muted-foreground">
 		X API: {news.xConfigured ? '設定済み' : <strong>未設定</strong>}
 		（未設定時は RSS / HTML のみ）。最終更新:{' '}
 		<time datetime={news.updatedAt}>{news.updatedAt}</time>
@@ -40,7 +40,7 @@ const regions = [
 			<select
 				name="region"
 				id="region"
-				class="ml-2 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-2 py-1"
+				class="ml-2 rounded-md border border-border bg-card px-2 py-1"
 			>
 				{regions.map((r) => (
 					<option value={r.id}>{r.label}</option>
@@ -52,7 +52,7 @@ const regions = [
 			<select
 				name="kind"
 				id="kind"
-				class="ml-2 rounded-md border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-2 py-1"
+				class="ml-2 rounded-md border border-border bg-card px-2 py-1"
 			>
 				<option value="all">すべて</option>
 				<option value="rss">RSS</option>

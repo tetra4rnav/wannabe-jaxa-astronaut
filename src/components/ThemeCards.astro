@@ -12,9 +12,9 @@ const themes = [
 	{
 		themes.map((t) => (
 			<a href={t.href} class="no-underline">
-				<div class="h-full rounded-lg border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-4 text-[hsl(var(--card-foreground))] shadow-sm transition-colors hover:border-[hsl(var(--primary))]">
+				<div class="h-full rounded-lg border border-border bg-card p-4 text-card-foreground shadow-sm transition-colors hover:border-primary">
 					<p class="text-base font-semibold">{t.title}</p>
-					<p class="mt-1 text-sm text-[hsl(var(--muted-foreground))]">{t.desc}</p>
+					<p class="mt-1 text-sm text-muted-foreground">{t.desc}</p>
 				</div>
 			</a>
 		))
