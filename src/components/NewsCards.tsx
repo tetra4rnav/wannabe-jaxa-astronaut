@@ -1,5 +1,6 @@
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PROJECT_BY_SLUG } from '@/config/projects';
 import type { NewsItem } from '@/utils/news-types';
 
 type Props = {
@@ -30,6 +31,20 @@ export function NewsCards({ items, showAll = false }: Props) {
 							<Badge variant="secondary">{item.sourceLabel}</Badge>
 							<Badge variant="outline">{item.region}</Badge>
 							<Badge variant="outline">{item.kind}</Badge>
+							{(item.projectSlugs ?? [])
+								.filter((s) => s !== 'unassigned')
+								.map((slug) => {
+									const project = PROJECT_BY_SLUG[slug];
+									const label = project?.nameJa ?? slug;
+									return (
+										<a key={slug} href={`/projects/${slug}/`}>
+											<Badge variant="outline">{label}</Badge>
+										</a>
+									);
+								})}
+							{item.ingestAsSource ? (
+								<Badge variant="outline">根拠候補</Badge>
+							) : null}
 							{item.machineTranslated ? (
 								<Badge variant="outline" className="border-amber-500/50 text-amber-200">
 									機械翻訳

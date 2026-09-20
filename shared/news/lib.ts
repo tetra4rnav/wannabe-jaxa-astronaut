@@ -50,6 +50,10 @@ export function mergeByUrl(existing: NewsItem[], incoming: NewsItem[]): NewsItem
 				titleJa: prev.titleJa || item.titleJa,
 				summaryJa: prev.summaryJa || item.summaryJa,
 				machineTranslated: prev.machineTranslated || item.machineTranslated,
+				projectSlugs: prev.projectSlugs ?? item.projectSlugs,
+				ingestAsSource: prev.ingestAsSource ?? item.ingestAsSource,
+				llmClassifiedAt: prev.llmClassifiedAt ?? item.llmClassifiedAt,
+				llmReason: prev.llmReason ?? item.llmReason,
 			});
 		} else {
 			map.set(item.url, item);

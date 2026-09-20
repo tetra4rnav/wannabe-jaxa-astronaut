@@ -1,0 +1,15 @@
+[
+	{
+		"id": "policy-space-basic-plan",
+		"title": "宇宙基本計画",
+		"sources": ["https://www8.cao.go.jp/space/plan/plan.html"],
+		"body": "日本の宇宙政策の基本は宇宙基本計画に定められている。",
+		"expect": {
+			"verdictIn": ["pass", "needs-update", "failed"]
+		},
+		"assertions": [
+			"verdict must be one of pass, needs-update, failed",
+			"summary must be a non-empty string describing the audit"
+		]
+	}
+]

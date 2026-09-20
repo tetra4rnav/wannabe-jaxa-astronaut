@@ -16,6 +16,10 @@ export type NewsItem = {
 	summaryJa: string;
 	accountHandle?: string;
 	machineTranslated: boolean;
+	projectSlugs?: string[];
+	ingestAsSource?: boolean;
+	llmClassifiedAt?: string;
+	llmReason?: string;
 };
 
 export type NewsFile = {

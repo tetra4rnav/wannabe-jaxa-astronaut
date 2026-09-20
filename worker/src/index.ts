@@ -1,8 +1,9 @@
 import type { Env } from './env.ts';
 import { FactCheckWorkflow } from './workflows/fact-check.ts';
 import { FetchNewsWorkflow } from './workflows/fetch-news.ts';
+import { IngestCorpusWorkflow } from './workflows/ingest-corpus.ts';
 
-export { FetchNewsWorkflow, FactCheckWorkflow };
+export { FetchNewsWorkflow, FactCheckWorkflow, IngestCorpusWorkflow };
 
 function unauthorized(): Response {
 	return new Response('Unauthorized', { status: 401 });
@@ -28,6 +29,10 @@ export default {
 				const instance = await env.FACT_CHECK.create();
 				return Response.json({ ok: true, job, id: instance.id });
 			}
+			if (job === 'ingest-corpus') {
+				const instance = await env.INGEST_CORPUS.create();
+				return Response.json({ ok: true, job, id: instance.id });
+			}
 			return Response.json({ ok: false, error: 'unknown job' }, { status: 400 });
 		}
 
@@ -35,7 +40,7 @@ export default {
 			return Response.json({
 				ok: true,
 				service: 'wannabe-jaxa-jobs',
-				jobs: ['fetch-news', 'fact-check'],
+				jobs: ['fetch-news', 'fact-check', 'ingest-corpus'],
 			});
 		}
 

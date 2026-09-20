@@ -5,12 +5,15 @@ import {
 } from 'cloudflare:workers';
 import type { FactCheckEntry, FactCheckFile } from '../../../src/utils/fact-check-types.ts';
 import { factCheckKvKey } from '../../../shared/news/format.ts';
+import { runJudgment, type FeedbackScore } from '../../../shared/opik/run-judgment.ts';
 import type { Env } from '../env.ts';
 
 const REPO = 'tetra4rnav/wannabe-jaxa-astronaut';
-const DEFAULT_MODEL = '@cf/meta/llama-3.1-8b-instruct';
 
 type WikiDoc = { id: string; title: string; sources: string[]; body: string };
+
+const SYSTEM =
+	'You are a fact-checker for a JAXA-unofficial wiki. Reply ONLY with JSON: {"verdict":"pass"|"needs-update"|"failed","summary":"...","issues":["..."]}';
 
 function parseFm(raw: string): { title: string; sources: string[]; body: string } {
 	if (!raw.startsWith('---')) return { title: '', sources: [], body: raw };
@@ -74,55 +77,53 @@ async function listWikiDocs(): Promise<WikiDoc[]> {
 	return docs;
 }
 
-async function callAi(env: Env, prompt: string, model: string): Promise<string | null> {
-	try {
-		// Workers AI model id is configured via env; types are model-literal unions.
-		const result = (await env.AI.run(model as Parameters<Ai['run']>[0], {
-			messages: [
-				{
-					role: 'system',
-					content:
-						'You are a fact-checker for a JAXA-unofficial wiki. Reply ONLY with JSON: {"verdict":"pass"|"needs-update"|"failed","summary":"...","issues":["..."]}',
-				},
-				{ role: 'user', content: prompt },
-			],
-		})) as { response?: string };
-		return result.response ?? null;
-	} catch (err) {
-		console.warn('[fact-check] AI failed', err);
-		return null;
+function factCheckScores(parsed: unknown | null): FeedbackScore[] {
+	if (!parsed || typeof parsed !== 'object') {
+		return [{ name: 'schema_ok', value: 0, reason: 'no object' }];
 	}
+	const o = parsed as Record<string, unknown>;
+	const verdictOk =
+		o.verdict === 'pass' || o.verdict === 'needs-update' || o.verdict === 'failed';
+	const schemaOk = verdictOk && typeof o.summary === 'string' && Array.isArray(o.issues);
+	return [
+		{ name: 'schema_ok', value: schemaOk ? 1 : 0 },
+		{ name: 'verdict_enum_ok', value: verdictOk ? 1 : 0 },
+	];
 }
 
 export class FactCheckWorkflow extends WorkflowEntrypoint<Env> {
 	async run(_event: WorkflowEvent<unknown>, step: WorkflowStep) {
-		const model = this.env.CF_AI_MODEL || DEFAULT_MODEL;
 		const docs = await step.do('list wiki docs', async () => listWikiDocs());
 
 		for (const doc of docs) {
 			await step.do(`check ${doc.id}`, { retries: { limit: 1, delay: '20 seconds' } }, async () => {
-				const prompt = `Article title: ${doc.title}\nSources:\n${doc.sources.join('\n')}\n\nBody:\n${doc.body}\n\nCheck claims against the listed official sources. Do not invent facts.`;
-				const response = await callAi(this.env, prompt, model);
+				const user = `Article title: ${doc.title}\nSources:\n${doc.sources.join('\n')}\n\nBody:\n${doc.body}\n\nCheck claims against the listed official sources. Do not invent facts.`;
+				const result = await runJudgment(this.env, {
+					name: `fact-check:${doc.id}`,
+					tags: ['judgment:fact-check'],
+					input: { docsId: doc.id, title: doc.title, sources: doc.sources },
+					system: SYSTEM,
+					user,
+					score: (_raw, parsed) => factCheckScores(parsed),
+				});
+
 				let verdict: FactCheckEntry['verdict'] = 'needs-update';
 				let summary = 'モデル応答を解析できませんでした';
 				let issues: string[] = [];
-				if (response) {
-					try {
-						const jsonMatch = response.match(/\{[\s\S]*\}/);
-						const parsed = JSON.parse(jsonMatch?.[0] ?? response) as {
-							verdict?: FactCheckEntry['verdict'];
-							summary?: string;
-							issues?: string[];
-						};
-						if (parsed.verdict) verdict = parsed.verdict;
-						if (parsed.summary) summary = parsed.summary;
-						if (Array.isArray(parsed.issues)) issues = parsed.issues;
-					} catch {
-						summary = response.slice(0, 400);
-					}
-				} else {
+				if (result.parsed && typeof result.parsed === 'object') {
+					const parsed = result.parsed as {
+						verdict?: FactCheckEntry['verdict'];
+						summary?: string;
+						issues?: string[];
+					};
+					if (parsed.verdict) verdict = parsed.verdict;
+					if (parsed.summary) summary = parsed.summary;
+					if (Array.isArray(parsed.issues)) issues = parsed.issues;
+				} else if (!result.raw) {
 					verdict = 'failed';
 					summary = 'Workers AI 呼び出し失敗';
+				} else {
+					summary = result.raw.slice(0, 400);
 				}
 
 				const key = factCheckKvKey(doc.id);
@@ -139,13 +140,13 @@ export class FactCheckWorkflow extends WorkflowEntrypoint<Env> {
 				data.id = doc.id;
 				data.entries.push({
 					date: new Date().toISOString().slice(0, 10),
-					model,
+					model: result.model,
 					verdict,
 					summary,
 					issues,
 				});
 				await this.env.STORE.put(key, JSON.stringify(data));
-				return { id: doc.id, verdict };
+				return { id: doc.id, verdict, traceId: result.traceId };
 			});
 		}
 	}
