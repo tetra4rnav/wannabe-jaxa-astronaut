@@ -22,6 +22,7 @@ Operator runbook for local commands, Pages deploy, secrets, and schedules. Visit
 | `npm run fact-check` | Local append of LLM fact-check history under `src/data/fact-checks/` (optional) |
 | `npm run deploy` | Optional local build + Pages Direct Upload; normal path is Git push |
 | `npm run deploy:jobs` | Deploy Worker + Workflows (`worker/wrangler.jsonc`) |
+| `npm run opik:eval` | Offline fixture contracts for LLM judgments (+ optional Opik Cloud suite trace) |
 
 `fetch:feeds` and `fetch:x` alias `fetch:news`.
 
@@ -51,7 +52,7 @@ Bind on the Pages project: KV `STORE` → `wannabe-jaxa-store`, D1 `DB` → `wan
 | Manual run | `POST /run` with `Authorization: Bearer $RUN_SECRET` and JSON `{"job":"fetch-news"|"fact-check"|"ingest-corpus"}` |
 | D1 migrate | `npx wrangler d1 migrations apply wannabe-jaxa-db --remote -c worker/wrangler.jsonc` |
 
-Shared pipeline: [`shared/news/`](../../shared/news/) (no filesystem). Timeline ingest: [`shared/timeline/`](../../shared/timeline/). Production news / fact-check JSON live in KV (`news:file`, `news:md`, `fact-check:{docsId}`). D1 holds projects / documents / events; R2 `wannabe-jaxa-chunks` + Vectorize `wannabe-jaxa-vectors` hold embeddings.
+Shared pipeline: [`shared/news/`](../../shared/news/) (no filesystem). Timeline ingest: [`shared/timeline/`](../../shared/timeline/). LLM judgments: [`shared/opik/`](../../shared/opik/) + [`shared/timeline/llm-classify-news.ts`](../../shared/timeline/llm-classify-news.ts). Production news / fact-check JSON live in KV (`news:file`, `news:md`, `fact-check:{docsId}`). D1 holds projects / documents / events; R2 `wannabe-jaxa-chunks` + Vectorize `wannabe-jaxa-vectors` hold embeddings. FetchNews uses Workers AI for project tags + ingest gate (batch of unclassified items per run).
 
 ## Secrets & env
 
@@ -71,17 +72,29 @@ Shared pipeline: [`shared/news/`](../../shared/news/) (no filesystem). Timeline 
 | --- | --- |
 | `X_BEARER_TOKEN` | FetchNews X API |
 | `DEEPL_API_KEY` | Optional translation |
-| `CF_AI_MODEL` | Optional FactCheck model override |
+| `CF_AI_MODEL` | Optional Workers AI model override (FetchNews gate + FactCheck) |
 | `RUN_SECRET` | Bearer token for `POST /run` |
+| `OPIK_API_KEY` | Opik Cloud API key (`authorization` header, no `Bearer ` prefix). **Required in production.** |
+| `OPIK_WORKSPACE` | Opik / Comet workspace name (`Comet-Workspace` header). **Required in production.** |
+| `OPIK_PROJECT_NAME` | Optional; default `wannabe-jaxa-astronaut` |
 
-Workers AI uses the `AI` binding (no account REST token required on the Worker).
+Workers AI uses the `AI` binding (no account REST token required on the Worker). If Opik secrets are unset, judgments still run (fail-open) but emit a warn — treat as degraded observability.
+
+### Opik evaluation
+
+| Layer | How |
+| --- | --- |
+| Production traces | Every judgment via `runJudgment` → Opik REST traces/spans; tags `judgment:news-ingest-gate`, `judgment:fact-check` |
+| Structural scores | Feedback scores `json_valid`, `schema_ok`, `slugs_in_catalog` / `verdict_enum_ok` |
+| Online rules | Opik UI → Project → Evaluation Rules: Custom LLM-as-Judge filtered by those tags; map `input` / `output`; sample 100% until cost requires throttling |
+| Offline | `npm run opik:eval` validates fixtures under [`scripts/opik/fixtures/`](../../scripts/opik/fixtures/); with Opik env set, logs a suite summary trace |
 
 ## Schedules (Cloudflare Workflows)
 
 | Workflow | Cron (UTC) | Writes |
 | --- | --- | --- |
-| `FetchNewsWorkflow` | `0 */6 * * *` | KV `news:file`, `news:md`; D1 `events` (tagged projects) |
-| `FactCheckWorkflow` | `0 3 * * 1` | KV `fact-check:{docsId}` |
+| `FetchNewsWorkflow` | `0 */6 * * *` | KV `news:file`, `news:md`; D1 `events`; LLM classify + gate; Vectorize for `ingestAsSource` |
+| `FactCheckWorkflow` | `0 3 * * 1` | KV `fact-check:{docsId}` (Opik-traced) |
 | `IngestCorpusWorkflow` | `0 */12 * * *` | D1 documents/events; R2 chunks; Vectorize upserts |
 
 CI (`.github/workflows/ci.yml`) still runs audit + build on push/PR. Scheduled GitHub Actions for news / fact-check were removed.

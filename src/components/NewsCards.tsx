@@ -42,6 +42,9 @@ export function NewsCards({ items, showAll = false }: Props) {
 										</a>
 									);
 								})}
+							{item.ingestAsSource ? (
+								<Badge variant="outline">根拠候補</Badge>
+							) : null}
 							{item.machineTranslated ? (
 								<Badge variant="outline" className="border-amber-500/50 text-amber-200">
 									機械翻訳

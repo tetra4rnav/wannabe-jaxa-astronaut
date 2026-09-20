@@ -19,8 +19,14 @@ export interface NewsItem {
 	/** Present for X posts */
 	accountHandle?: string;
 	machineTranslated: boolean;
-	/** Catalog project slugs from classifier (includes unassigned) */
+	/** Catalog project slugs from LLM classifier (includes unassigned) */
 	projectSlugs?: string[];
+	/** LLM gate: news-like and trustworthy as official-adjacent RAG evidence */
+	ingestAsSource?: boolean;
+	/** ISO timestamp when LLM classification last ran */
+	llmClassifiedAt?: string;
+	/** Short LLM rationale (debug / badge context) */
+	llmReason?: string;
 }
 
 export interface NewsFile {

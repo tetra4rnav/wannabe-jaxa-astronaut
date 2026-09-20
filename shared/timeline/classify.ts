@@ -1,26 +1,34 @@
+/** Allowlist helpers for project catalog slugs (no keyword classification). */
+
 import { PROJECTS, type ProjectSlug } from '../../src/config/projects.ts';
 
-/** Keyword classifier against the human catalog. Never invents slugs. */
-export function classifyProjects(text: string): ProjectSlug[] {
-	const hay = text.toLowerCase();
-	const hits: ProjectSlug[] = [];
-	for (const p of PROJECTS) {
-		if (p.keywords.some((k) => hay.includes(k.toLowerCase()))) {
-			hits.push(p.slug);
-		}
-	}
-	return hits.length ? hits : ['unassigned'];
+const CATALOG = new Set(PROJECTS.map((p) => p.slug));
+
+export function catalogSlugs(): ProjectSlug[] {
+	return PROJECTS.map((p) => p.slug);
 }
 
-export function classifyNewsItem(item: {
-	titleOriginal: string;
-	summaryOriginal: string;
-	titleJa?: string;
-	summaryJa?: string;
-}): ProjectSlug[] {
-	return classifyProjects(
-		[item.titleOriginal, item.summaryOriginal, item.titleJa ?? '', item.summaryJa ?? ''].join(
-			'\n',
-		),
-	);
+export function catalogPromptLines(): string {
+	return PROJECTS.filter((p) => p.slug !== 'unassigned')
+		.map((p) => `- ${p.slug}: ${p.nameJa} / ${p.nameEn}`)
+		.join('\n');
+}
+
+/** Keep only known catalog slugs; empty → unassigned. Never invent. */
+export function filterCatalogSlugs(raw: unknown): ProjectSlug[] {
+	if (!Array.isArray(raw)) return ['unassigned'];
+	const out: ProjectSlug[] = [];
+	const seen = new Set<string>();
+	for (const x of raw) {
+		if (typeof x !== 'string') continue;
+		const slug = x.trim();
+		if (!CATALOG.has(slug as ProjectSlug) || seen.has(slug)) continue;
+		seen.add(slug);
+		out.push(slug as ProjectSlug);
+	}
+	return out.length ? out : ['unassigned'];
+}
+
+export function isCatalogSlug(slug: string): slug is ProjectSlug {
+	return CATALOG.has(slug as ProjectSlug);
 }
