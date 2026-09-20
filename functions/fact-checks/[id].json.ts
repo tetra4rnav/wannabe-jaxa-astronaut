@@ -1,5 +1,4 @@
-import type { FactCheckFile } from '../src/utils/fact-check-types';
-import { factCheckKvKey } from '../shared/news/format';
+import { factCheckKvKey, type FactCheckFile } from '../_lib/store';
 
 interface Env {
 	STORE: KVNamespace;

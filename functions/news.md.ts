@@ -1,5 +1,9 @@
-import { NEWS_KV_KEY, NEWS_MD_KV_KEY, newsFileToMarkdown } from '../shared/news/format';
-import type { NewsFile } from '../src/utils/news-types';
+import {
+	NEWS_KV_KEY,
+	NEWS_MD_KV_KEY,
+	newsFileToMarkdown,
+	type NewsFile,
+} from './_lib/store';
 
 interface Env {
 	STORE: KVNamespace;
