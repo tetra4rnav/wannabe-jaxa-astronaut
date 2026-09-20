@@ -31,9 +31,9 @@ A study site for people who want to become JAXA astronauts, and for anyone learn
 
 ## Site
 
-- Live site: https://wannabe-jaxa-astronaut.pages.dev
+- Live site: https://wannabe-jaxa-astronaut.diaphana.io
 - GitHub: https://github.com/tetra4rnav/wannabe-jaxa-astronaut
 
-To add wiki pages, write Markdown and cite official URLs. Steps are on [About](https://wannabe-jaxa-astronaut.pages.dev/about/).
+To add wiki pages, write Markdown and cite official URLs. Steps are on [About](https://wannabe-jaxa-astronaut.diaphana.io/about/).
 
 Developer specs live in [docs/](./docs/).

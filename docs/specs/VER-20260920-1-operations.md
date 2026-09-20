@@ -36,6 +36,18 @@ Operator runbook for local commands, Pages deploy, secrets, and schedules. Visit
 
 Emergency: `npx wrangler pages deploy ./dist --project-name=wannabe-jaxa-astronaut`.
 
+### Custom domain
+
+| Item | Value |
+| --- | --- |
+| Canonical host | `https://wannabe-jaxa-astronaut.diaphana.io` |
+| Pages project | `wannabe-jaxa-astronaut` |
+| Alias | `wannabe-jaxa-astronaut.pages.dev` (kept; no forced redirect) |
+| Zone | `diaphana.io` (same Cloudflare account) |
+| DNS | Proxied CNAME `wannabe-jaxa-astronaut` → `wannabe-jaxa-astronaut.pages.dev` (required if Pages reports “CNAME record not set”) |
+
+Attach via Pages Custom domains (or `POST .../pages/projects/wannabe-jaxa-astronaut/domains`). Wait until domain status is **Active**. Astro `site`, visitor READMEs, and corpus `SITE` use the canonical host. Jobs Worker remains on `*.workers.dev`.
+
 Source-domain audit runs on every Pages / local build via `prebuild`. There is no GitHub Actions CI workflow; PR / production deploy gates on the Cloudflare Pages build check. Scheduled news / fact-check jobs live on the Worker (not GitHub Actions).
 
 Do **not** enable Bot Fight Mode or AI crawler blocking; [`public/robots.txt`](../../public/robots.txt) is allow-all.

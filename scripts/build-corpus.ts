@@ -10,7 +10,7 @@ const DOCS = path.join(ROOT, 'src/content/docs');
 const NEWS_PATH = path.join(ROOT, 'src/data/news.json');
 const OUT = path.join(ROOT, 'public/corpus');
 const SCHEMA_VERSION = 1;
-const SITE = 'https://wannabe-jaxa-astronaut.pages.dev';
+const SITE = 'https://wannabe-jaxa-astronaut.diaphana.io';
 
 interface Chunk {
 	id: string;

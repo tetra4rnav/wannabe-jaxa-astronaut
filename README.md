@@ -31,9 +31,9 @@ JAXA 宇宙飛行士を志望する人、日本の有人宇宙開発を公式一
 
 ## サイト
 
-- 公開サイト: https://wannabe-jaxa-astronaut.pages.dev
+- 公開サイト: https://wannabe-jaxa-astronaut.diaphana.io
 - GitHub: https://github.com/tetra4rnav/wannabe-jaxa-astronaut
 
-Wiki を足すときは、公式ページの URL を出典に Markdown を書いてください。手順はサイトの [このサイトについて](https://wannabe-jaxa-astronaut.pages.dev/about/) にあります。
+Wiki を足すときは、公式ページの URL を出典に Markdown を書いてください。手順はサイトの [このサイトについて](https://wannabe-jaxa-astronaut.diaphana.io/about/) にあります。
 
 開発者向けの仕様は [docs/](./docs/) を参照してください。
