@@ -3,6 +3,8 @@ import SiteLayout from '../../layouts/SiteLayout.astro';
 import { listCatalogProjects } from '../../config/projects';
 import SiteDisclaimer from '../../components/SiteDisclaimer.astro';
 
+export const prerender = true;
+
 const projects = listCatalogProjects();
 ---
 

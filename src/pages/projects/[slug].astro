@@ -4,6 +4,8 @@ import { PROJECT_BY_SLUG, listCatalogProjects } from '../../config/projects';
 import { ProjectTimeline } from '../../components/ProjectTimeline';
 import SiteDisclaimer from '../../components/SiteDisclaimer.astro';
 
+export const prerender = true;
+
 export function getStaticPaths() {
 	return listCatalogProjects().map((p) => ({ params: { slug: p.slug } }));
 }

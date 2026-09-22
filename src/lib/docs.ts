@@ -45,7 +45,7 @@ export async function getSidebarNav(): Promise<NavGroup[]> {
 	const site: NavGroup = {
 		label: 'このサイト',
 		items: [
-			{ href: '/', title: 'ニュース' },
+			{ href: '/news/', title: 'ニュース' },
 			{ href: '/projects/', title: 'プロジェクト時系列' },
 			{ href: '/proposals/', title: 'Wiki 構築提案' },
 			{ href: '/about/', title: 'このサイトについて' },
@@ -88,4 +88,33 @@ export async function getSidebarNav(): Promise<NavGroup[]> {
 	});
 
 	return [site, ...wikiGroups];
+}
+
+export type WikiTheme = {
+	href: string;
+	title: string;
+	description?: string;
+};
+
+/** Folder index pages for the home Wiki section. */
+export async function getWikiThemes(): Promise<WikiTheme[]> {
+	const docs = await getPublishedDocs();
+	const folders = new Set<string>();
+	for (const doc of docs) {
+		const pathId = doc.id.replace(/\\/g, '/').replace(/\.(md|mdx)$/i, '');
+		const parts = pathId.split('/');
+		if (parts.length >= 2) folders.add(parts[0]!);
+	}
+
+	const themes: WikiTheme[] = [];
+	for (const folder of folders) {
+		const index = docs.find((doc) => docIdToSlug(doc.id) === folder);
+		if (!index) continue;
+		themes.push({
+			href: slugToHref(folder),
+			title: index.data.title,
+			description: index.data.description,
+		});
+	}
+	return themes.sort((a, b) => a.title.localeCompare(b.title, 'ja'));
 }

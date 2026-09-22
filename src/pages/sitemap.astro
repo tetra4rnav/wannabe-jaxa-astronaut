@@ -3,6 +3,8 @@ import SiteLayout from '../layouts/SiteLayout.astro';
 import { getCollection } from 'astro:content';
 import { docIdToSlug, isExcludedWiki, slugToHref, slugToMdHref } from '../lib/docs';
 
+export const prerender = true;
+
 const docs = (await getCollection('docs')).filter((d) => !isExcludedWiki(d.id, d.data.draft));
 
 function hrefFor(id: string): string {

@@ -3,6 +3,7 @@ import type { NewsFile, NewsItem } from '@/utils/news-types';
 import { NewsCards } from '@/components/NewsCards';
 
 type Props = {
+	initialNews?: NewsFile | null;
 	showAll?: boolean;
 	limit?: number;
 	showMeta?: boolean;
@@ -14,11 +15,17 @@ const empty: NewsFile = {
 	items: [],
 };
 
-export function NewsFeed({ showAll = false, limit, showMeta = true }: Props) {
-	const [news, setNews] = useState<NewsFile | null>(null);
+export function NewsFeed({
+	initialNews = null,
+	showAll = false,
+	limit,
+	showMeta = true,
+}: Props) {
+	const [news, setNews] = useState<NewsFile | null>(initialNews);
 	const [error, setError] = useState<string | null>(null);
 
 	useEffect(() => {
+		if (initialNews) return;
 		let cancelled = false;
 		fetch('/news.json')
 			.then(async (res) => {
@@ -34,7 +41,7 @@ export function NewsFeed({ showAll = false, limit, showMeta = true }: Props) {
 		return () => {
 			cancelled = true;
 		};
-	}, []);
+	}, [initialNews]);
 
 	if (error) {
 		return <p className="text-sm text-muted-foreground">ニュースを読み込めませんでした（{error}）。</p>;
@@ -43,7 +50,7 @@ export function NewsFeed({ showAll = false, limit, showMeta = true }: Props) {
 		return <p className="text-sm text-muted-foreground">ニュースを読み込み中…</p>;
 	}
 
-	let items = news.items as NewsItem[];
+	let items = (news.items ?? empty.items) as NewsItem[];
 	if (typeof limit === 'number') items = items.slice(0, limit);
 
 	return (
@@ -64,5 +71,3 @@ export function NewsFeed({ showAll = false, limit, showMeta = true }: Props) {
 		</div>
 	);
 }
-
-

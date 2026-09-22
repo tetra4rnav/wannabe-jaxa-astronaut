@@ -15,46 +15,48 @@ Operator runbook for local commands, Pages deploy, secrets, and schedules. Visit
 | --- | --- |
 | `npm install` | Install dependencies |
 | `npm run dev` | Dev server (`astro dev`; agents: `astro dev --background`) |
-| `npm run build` | Corpus generation + production build → `dist/` |
+| `npm run build` | Corpus generation + production build (Cloudflare adapter output under `dist/`) |
+| `npm run preview` | `astro preview` (workerd; mirrors production SSR) |
 | `npm run fetch:news` | RSS / HTML / X → `src/data/news.json` (local fallback) |
 | `npm run wiki:audit` | Official-domain audit of wiki Markdown (also runs in `prebuild`) |
 | `npm run corpus:build` | `/corpus/*.jsonl` generation |
 | `npm run fact-check` | Local append of LLM fact-check history under `src/data/fact-checks/` (optional) |
-| `npm run deploy` | Optional local build + Pages Direct Upload; normal path is Git push |
-| `npm run deploy:jobs` | Deploy Worker + Workflows (`worker/wrangler.jsonc`) |
+| `npm run deploy` | Optional local build + `wrangler deploy` (public Astro SSR Worker + assets) |
+| `npm run deploy:jobs` | Deploy jobs Worker + Workflows (`worker/wrangler.jsonc`) |
 | `npm run opik:eval` | Offline fixture contracts for LLM judgments (+ optional Opik Cloud suite trace) |
 
 `fetch:feeds` and `fetch:x` alias `fetch:news`.
 
-### Pages Git deploy
+### Public app deploy
 
 | Setting | Value |
 | --- | --- |
 | Build command | `npm run build` (runs `prebuild`: `wiki:audit` then `corpus:build`) |
-| Build output | `dist` |
-| Production branch | `main` |
+| Output | `dist/client` (assets) + `dist/server/entry.mjs` (SSR); see [ADR-20260920-5](./ADR-20260920-5-astro-ssr-pages.md) |
+| Deploy | `npm run deploy` → `wrangler deploy` (root `wrangler.jsonc`) |
+| Production branch | `main` (Workers Builds / Git if configured) |
 
-Emergency: `npx wrangler pages deploy ./dist --project-name=wannabe-jaxa-astronaut`.
+Emergency: `npx wrangler deploy` after a successful `astro build` (adapter fills `main` / `assets` in the generated worker config).
 
 ### Custom domain
 
 | Item | Value |
 | --- | --- |
 | Canonical host | `https://wannabe-jaxa-astronaut.diaphana.io` |
-| Pages project | `wannabe-jaxa-astronaut` |
+| Pages project (legacy alias) | `wannabe-jaxa-astronaut` (public app may be the Worker of the same name after SSR) |
 | Alias | `wannabe-jaxa-astronaut.pages.dev` (kept; no forced redirect) |
 | Zone | `diaphana.io` (same Cloudflare account) |
 | DNS | Proxied CNAME `wannabe-jaxa-astronaut` → `wannabe-jaxa-astronaut.pages.dev` (required if Pages reports “CNAME record not set”) |
 
 Attach via Pages Custom domains (or `POST .../pages/projects/wannabe-jaxa-astronaut/domains`). Wait until domain status is **Active**. Astro `site`, visitor READMEs, and corpus `SITE` use the canonical host. Jobs Worker remains on `*.workers.dev`.
 
-Source-domain audit runs on every Pages / local build via `prebuild`. There is no GitHub Actions CI workflow; PR / production deploy gates on the Cloudflare Pages build check. Scheduled news / fact-check jobs live on the Worker (not GitHub Actions).
+Source-domain audit runs on every local / CI build via `prebuild`. Scheduled news / fact-check jobs live on the jobs Worker (not GitHub Actions).
 
 Do **not** enable Bot Fight Mode or AI crawler blocking; [`public/robots.txt`](../../public/robots.txt) is allow-all.
 
-Pages Functions (`functions/`) serve live `/news.json`, `/news.md`, `/fact-checks/:id.json`, and `/proposals.json` (plus `/proposals/:id.json`) from KV binding `STORE`. Project timelines use D1 binding `DB` via `/projects/catalog.json` and `/projects/:slug/timeline.json`. When KV is empty, news falls back to GitHub raw `src/data/news.json`.
+Remaining Pages Functions under `functions/` may still serve `/news.md`, `/fact-checks/:id.json`, `/proposals.json` (plus `/proposals/:id.json`), and project timeline JSON when that surface is active. **`/news.json` is served by the Astro SSR app** (KV with bundled `src/data/news.json` fallback). Home (`/`) and `/news/` render news on the server from the same loader.
 
-Bind on the Pages project: KV `STORE` → `wannabe-jaxa-store`, D1 `DB` → `wannabe-jaxa-db`.
+Bind on the public app: KV `STORE` → `wannabe-jaxa-store`, D1 `DB` → `wannabe-jaxa-db`.
 
 ### Jobs Worker
 

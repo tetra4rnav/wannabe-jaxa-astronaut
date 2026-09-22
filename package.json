@@ -15,11 +15,12 @@
     "wiki:audit": "tsx scripts/wiki-audit.ts",
     "corpus:build": "tsx scripts/build-corpus.ts",
     "fact-check": "tsx scripts/fact-check.ts",
-    "deploy": "npm run build && wrangler pages deploy ./dist --project-name=wannabe-jaxa-astronaut",
+    "deploy": "npm run build && wrangler deploy",
     "deploy:jobs": "wrangler deploy -c worker/wrangler.jsonc",
     "opik:eval": "tsx scripts/opik/run-eval.ts"
   },
   "dependencies": {
+    "@astrojs/cloudflare": "^14.3.2",
     "@astrojs/react": "^6.0.6",
     "@astrojs/sitemap": "^3.7.4",
     "@radix-ui/react-separator": "^1.1.15",
