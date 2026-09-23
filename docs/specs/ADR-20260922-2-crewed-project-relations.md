@@ -5,7 +5,7 @@
 
 ## Context
 
-The product focus moves from a study wiki loop to an official-only crewed spaceflight knowledge base and project timelines. Catalog membership and cross-project links must be reproducible. Graph traversal search and ontology tooling are deferred ([issue #10](https://github.com/tetra4rnav/wannabe-jaxa-astronaut/issues/10)).
+The product focus moves from a study wiki loop to an official-only crewed spaceflight knowledge base and project timelines. Catalog membership and cross-project links must be reproducible. Graph traversal for retrieval is specified in [ADR-20260922-3](./ADR-20260922-3-graph-rag.md) (issue [#10](https://github.com/tetra4rnav/wannabe-jaxa-astronaut/issues/10)); ontology admin UI remains deferred ([#11](https://github.com/tetra4rnav/wannabe-jaxa-astronaut/issues/11)).
 
 ## Decision
 
@@ -24,9 +24,9 @@ A catalog node must be **ongoing or planned**, named as a **specific program** i
 
 Company, vehicle, or station splits happen only when the same class of official source names that proper noun for Japan’s role or a seed dependency.
 
-### Relations (config only this branch)
+### Relations (config)
 
-Typed edges on [`src/config/projects.ts`](../../src/config/projects.ts): `partner`, `depends_on`, `successor`. Displayed in UI. Not used for retrieval yet.
+Typed edges on [`src/config/projects.ts`](../../src/config/projects.ts): `partner`, `depends_on`, `successor`. Displayed in UI. Retrieval walks these edges via [ADR-20260922-3](./ADR-20260922-3-graph-rag.md) (`expandRetrievalSlugs`); this ADR owns membership and edge types only.
 
 ### Knowledge base
 
@@ -34,12 +34,13 @@ R2 chunks + Vectorize remain the corpus ([ADR-20260920-2](./ADR-20260920-2-proje
 
 ### Vocabulary now vs later
 
-- **Now:** Project, phase (`ongoing` / `planned`), role (`seed` / `related` / `retired`), relation types, event kinds.
-- **Later (issue #10):** Whether agency, vehicle, and budget line become first-class; Graph RAG that walks relations before retrieving chunks.
+- **Now:** Project, phase (`ongoing` / `planned`), role (`seed` / `related` / `retired`), relation types, event kinds; Graph RAG 1-hop expand ([ADR-20260922-3](./ADR-20260922-3-graph-rag.md)).
+- **Not first-class:** Agency, vehicle, budget line; planned display-only `countries` / `kindJa` (Site only).
+- **Later (issue #11):** Ontology / catalog admin UI; any reconsideration of first-class overlays.
 
 ### Ontology tooling
 
-No admin UI, OWL, or reasoner in this branch.
+No admin UI, OWL, or reasoner in this branch (tracked under issue #11).
 
 ## Consequences
 
@@ -51,10 +52,12 @@ No admin UI, OWL, or reasoner in this branch.
 
 - Cap related-node count — rejected; membership is rule-based, not quota-based.
 - Theme nodes for “lunar society” — rejected; project-unit only.
-- Implement Graph RAG in the same branch — deferred to issue #10 after catalog rules stabilize.
+- Implement Graph RAG in the same decision as catalog rules — split: catalog here, retrieve walk in ADR-20260922-3.
 
 ## Related
 
 - [REQ-20260922-1-crewed-timelines.md](./REQ-20260922-1-crewed-timelines.md)
+- [ADR-20260922-3-graph-rag.md](./ADR-20260922-3-graph-rag.md)
+- [REQ-20260922-2-graph-rag.md](./REQ-20260922-2-graph-rag.md)
 - [DOMAIN.md](../DOMAIN.md)
 - [GLOSSARY.md](../GLOSSARY.md)

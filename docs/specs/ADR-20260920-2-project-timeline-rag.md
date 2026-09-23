@@ -15,11 +15,11 @@ Retrieval for proposals and display must preserve program history, not a flat do
 - News enters Vectorize / R2 corpus **only** when `ingestAsSource` is true. All news still appear in KV UI and D1 `events` (kind `news`).
 - D1 `projects`, `events`, `documents`; R2 for chunk text; Vectorize with indexed metadata `project`, `occurred_at`, `kind`.
 - Embeddings: `@cf/qwen/qwen3-embedding-0.6b` (1024 dims).
-- Retrieval for a news item: same project(s), `occurred_at` on or before the news date, prefer `official` / `paper` (and gated `news`) for proposal grounding.
+- Retrieval for a news item: classified project(s) **plus 1-hop relation expansion** ([ADR-20260922-3](./ADR-20260922-3-graph-rag.md)), `occurred_at` on or before the news date, prefer `official` / `paper` (and gated `news`) for proposal grounding; prefer same-project matches when sorting.
 - UI: `/projects/{slug}/` mixes official milestones and news; news cards show project badges and 「根拠候補」 when gated in; each item also has SSR detail at `/news/{id}/`.
 - Unassigned news keeps an `unassigned` event.
 - **Every LLM judgment** (news gate via Jev, fact-check, wiki proposals) is traced and structurally scored in **Opik** (`shared/opik/`).
-- ProposeWiki retrieves same-project Vectorize chunks with `occurred_at` on or before the news date (prefer `official` / `paper`), then writes proposal JSON to KV only — never wiki Markdown.
+- ProposeWiki retrieves Vectorize chunks for the classified project(s) and their 1-hop expansion with `occurred_at` on or before the news date (prefer `official` / `paper`), then writes proposal JSON to KV only — never wiki Markdown.
 
 ## Consequences
 
@@ -40,5 +40,6 @@ Retrieval for proposals and display must preserve program history, not a flat do
 - [DOMAIN.md](../DOMAIN.md)
 - [ADR-20260920-3-source-policy.md](./ADR-20260920-3-source-policy.md)
 - [ADR-20260922-1-news-detail-and-jev.md](./ADR-20260922-1-news-detail-and-jev.md)
+- [ADR-20260922-3-graph-rag.md](./ADR-20260922-3-graph-rag.md)
 - [REQ-20260920-1-four-stage-loop.md](./REQ-20260920-1-four-stage-loop.md)
 - [VER-20260920-1-operations.md](./VER-20260920-1-operations.md)

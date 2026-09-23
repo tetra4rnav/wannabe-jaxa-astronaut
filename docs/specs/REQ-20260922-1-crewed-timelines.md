@@ -18,7 +18,7 @@ Visitors need an unofficial site that places current and planned national and co
 
 ## Out of scope
 
-- Graph RAG traversal and ontology management UI (tracked separately)
+- Ontology / catalog admin UI (tracked under [#11](https://github.com/tetra4rnav/wannabe-jaxa-astronaut/issues/11); Graph RAG walk is [REQ-20260922-2](./REQ-20260922-2-graph-rag.md))
 - Public in-site chat over the corpus
 - Automatic wiki generation or rewrite
 - Bulk PDF full-text extraction
@@ -28,6 +28,8 @@ Visitors need an unofficial site that places current and planned national and co
 ## Related
 
 - [ADR-20260922-2-crewed-project-relations.md](./ADR-20260922-2-crewed-project-relations.md)
+- [ADR-20260922-3-graph-rag.md](./ADR-20260922-3-graph-rag.md)
+- [REQ-20260922-2-graph-rag.md](./REQ-20260922-2-graph-rag.md)
 - [ADR-20260920-2-project-timeline-rag.md](./ADR-20260920-2-project-timeline-rag.md)
 - [ADR-20260920-3-source-policy.md](./ADR-20260920-3-source-policy.md)
 - [DOMAIN.md](../DOMAIN.md)

@@ -2,6 +2,7 @@
 import SiteLayout from '../../layouts/SiteLayout.astro';
 import {
 	PROJECT_BY_SLUG,
+	countryFlag,
 	listProjectPages,
 	phaseLabelJa,
 	relationLabelJa,
@@ -16,6 +17,10 @@ export function getStaticPaths() {
 
 const { slug } = Astro.params;
 const project = slug ? PROJECT_BY_SLUG[slug] : undefined;
+const flags =
+	project?.countries && project.countries.length > 0
+		? project.countries.map((c) => countryFlag(c)).join('')
+		: '';
 ---
 
 <SiteLayout
@@ -28,6 +33,19 @@ const project = slug ? PROJECT_BY_SLUG[slug] : undefined;
 	{
 		project ? (
 			<>
+				{(flags || project.kindJa) && (
+					<p class="mb-2 text-sm">
+						{flags ? (
+							<span class="tracking-wide" title={project.countries?.join(', ')}>
+								{flags}
+							</span>
+						) : null}
+						{flags && project.kindJa ? ' · ' : null}
+						{project.kindJa ? (
+							<span class="text-muted-foreground">{project.kindJa}</span>
+						) : null}
+					</p>
+				)}
 				<p class="mb-4 text-sm text-muted-foreground">
 					{project.nameEn}
 					{project.phase ? ` · ${phaseLabelJa(project.phase)}` : ''}

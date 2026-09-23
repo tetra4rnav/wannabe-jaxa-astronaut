@@ -1,23 +1,11 @@
 ---
 import SiteLayout from '../layouts/SiteLayout.astro';
 import { NewsFeed } from '../components/NewsFeed';
-import {
-	Card,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from '../components/ui/card';
-import {
-	listInScopeProjects,
-	phaseLabelJa,
-	relationLabelJa,
-	PROJECT_BY_SLUG,
-} from '../config/projects';
+import ProjectsCatalogTable from '../components/ProjectsCatalogTable.astro';
 import { loadNewsFile } from '../lib/news-store';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../lib/site';
 
 const news = await loadNewsFile();
-const projects = listInScopeProjects();
 const HOME_NEWS_LIMIT = 5;
 ---
 
@@ -42,37 +30,6 @@ const HOME_NEWS_LIMIT = 5;
 		<p class="mb-4 text-sm text-muted-foreground">
 			進行中・計画中の公式な計画名。主題ではなくプロジェクト単位です。
 		</p>
-		{
-			projects.length === 0 ? (
-				<p class="text-sm text-muted-foreground">計画がまだありません。</p>
-			) : (
-				<div class="grid gap-4 sm:grid-cols-2">
-					{projects.map((p) => (
-						<a href={`/projects/${p.slug}/`} class="block no-underline">
-							<Card className="h-full transition-colors hover:bg-muted/40">
-								<CardHeader>
-									<CardTitle>{p.nameJa}</CardTitle>
-									<CardDescription>
-										{`${p.nameEn}${p.phase ? ` · ${phaseLabelJa(p.phase)}` : ''}${p.role === 'seed' ? ' · 種' : p.role === 'related' ? ' · 関係先' : ''}`}
-									</CardDescription>
-								</CardHeader>
-								{p.relations && p.relations.length > 0 ? (
-									<ul class="space-y-0.5 px-6 pb-4 text-xs text-muted-foreground">
-										{p.relations.map((r) => {
-											const target = PROJECT_BY_SLUG[r.target];
-											return (
-												<li>
-													{relationLabelJa(r.type)} → {target?.nameJa ?? r.target}
-												</li>
-											);
-										})}
-									</ul>
-								) : null}
-							</Card>
-						</a>
-					))}
-				</div>
-			)
-		}
+		<ProjectsCatalogTable />
 	</section>
 </SiteLayout>

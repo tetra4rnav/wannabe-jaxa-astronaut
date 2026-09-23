@@ -11,7 +11,8 @@ Use these terms in code comments, specs, commits, and UI copy. Prefer the Englis
 | **Seed** | 種 | In-scope project where Japan participates. |
 | **Related** | 関係先 | In-scope international / commercial project linked by Japan participation or seed dependency / partnership / succession. |
 | **Retired** | 引退 | Catalog slug kept for pages and old events; not newly classified. |
-| **Relation** | 関係 | Config edge: `partner` / `depends_on` / `successor`. |
+| **Relation** | 関係 | Config edge: `partner` / `depends_on` / `successor`. Used for UI and 1-hop Graph RAG expansion. |
+| **Graph RAG** | Graph RAG | Retrieve path that expands classified project slugs via Relations (maxHops = 1) before Vectorize filter. |
 | **Event** | 出来事 | Dated row on a project timeline (`occurred_at`). |
 | **Proposal** | Wiki の案 | LLM suggestion for a new or updated wiki page (deferred). |
 | **Fact-check** | ファクトチェック / 監査 | LLM audit of wiki claims; append-only history. |
@@ -20,5 +21,6 @@ Use these terms in code comments, specs, commits, and UI copy. Prefer the Englis
 | **Timeline** | 時系列 | Chronological mix of events for one project. |
 | **Unassigned** | 未分類 | News that could not be tagged to an in-scope project. |
 | **Ingest gate** | 取り込みゲート | LLM decision that news is news-like and trustworthy enough for RAG evidence. |
+| **countries / kindJa** | 国 / 種別（表示用） | Site-only catalog display fields. Not graph nodes; must not enter RAG. |
 
-Do not use “article brief” for LLM news essays—the product has **proposals**, not auto-written news articles.
+Do not use “article brief” for LLM news essays—the product has **proposals**, not auto-written news articles. Agency, vehicle, and budget line are not catalog entity types.

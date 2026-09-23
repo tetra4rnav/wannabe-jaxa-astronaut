@@ -13,6 +13,7 @@ export type ProjectSlug =
 export type ProjectPhase = 'ongoing' | 'planned';
 export type ProjectRole = 'seed' | 'related' | 'retired';
 export type ProjectRelationType = 'partner' | 'depends_on' | 'successor';
+export type CountryCode = 'JP' | 'US' | 'CA' | 'EU' | 'RU';
 
 export interface ProjectRelation {
 	type: ProjectRelationType;
@@ -34,6 +35,10 @@ export interface ProjectConfig {
 	/** omitted for unassigned */
 	role?: ProjectRole;
 	relations?: ProjectRelation[];
+	/** Display only — not used by classify / corpus / Vectorize / ingest gate / graph expand */
+	countries?: CountryCode[];
+	/** Display only — not used by classify / corpus / Vectorize / ingest gate / graph expand */
+	kindJa?: string;
 }
 
 /**
@@ -50,6 +55,8 @@ export const PROJECTS: ProjectConfig[] = [
 		startDate: '1998-11-20',
 		phase: 'ongoing',
 		role: 'seed',
+		countries: ['JP', 'US', 'CA', 'EU', 'RU'],
+		kindJa: 'ISS',
 		keywords: [
 			'iss',
 			'国際宇宙ステーション',
@@ -76,6 +83,8 @@ export const PROJECTS: ProjectConfig[] = [
 		startDate: '2017-01-01',
 		phase: 'ongoing',
 		role: 'seed',
+		countries: ['JP', 'US'],
+		kindJa: '月探査',
 		keywords: ['artemis', 'アルテミス', 'orion', 'sls'],
 	},
 	{
@@ -86,6 +95,8 @@ export const PROJECTS: ProjectConfig[] = [
 		phase: 'planned',
 		role: 'related',
 		relations: [{ type: 'partner', target: 'artemis' }],
+		countries: ['JP', 'US', 'EU', 'CA'],
+		kindJa: '月軌道',
 		keywords: ['gateway', 'ゲートウェイ', 'lunar gateway'],
 	},
 	{
@@ -95,7 +106,12 @@ export const PROJECTS: ProjectConfig[] = [
 		wikiDocsId: 'society/lunar-society',
 		phase: 'planned',
 		role: 'seed',
-		relations: [{ type: 'partner', target: 'artemis' }],
+		relations: [
+			{ type: 'partner', target: 'artemis' },
+			{ type: 'depends_on', target: 'artemis' },
+		],
+		countries: ['JP', 'US'],
+		kindJa: '月面',
 		keywords: ['与圧ローバ', 'pressurized rover', 'lunar rover', '月面ローバ'],
 	},
 	{
@@ -135,6 +151,8 @@ export const PROJECTS: ProjectConfig[] = [
 		phase: 'planned',
 		role: 'related',
 		relations: [{ type: 'successor', target: 'iss-kibo' }],
+		countries: ['US'],
+		kindJa: '商業低軌道',
 		keywords: ['commercial leo', '商業低軌道', 'axiom', 'starlab', 'ポストiss', 'post-iss'],
 	},
 	{
@@ -161,7 +179,22 @@ export function listProjectPages(): ProjectConfig[] {
 
 /** @deprecated Prefer listInScopeProjects for UI lists. */
 export function listCatalogProjects(): ProjectConfig[] {
-	return PROJECTS.filter((p) => p.slug !== 'unassigned');
+	return listInScopeProjects();
+}
+
+export function countryFlag(code: CountryCode): string {
+	switch (code) {
+		case 'JP':
+			return '🇯🇵';
+		case 'US':
+			return '🇺🇸';
+		case 'CA':
+			return '🇨🇦';
+		case 'EU':
+			return '🇪🇺';
+		case 'RU':
+			return '🇷🇺';
+	}
 }
 
 export function relationLabelJa(type: ProjectRelationType): string {
