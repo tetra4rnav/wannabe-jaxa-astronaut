@@ -95,10 +95,7 @@ export const PROJECTS: ProjectConfig[] = [
 		wikiDocsId: 'society/lunar-society',
 		phase: 'planned',
 		role: 'seed',
-		relations: [
-			{ type: 'partner', target: 'artemis' },
-			{ type: 'depends_on', target: 'artemis' },
-		],
+		relations: [{ type: 'partner', target: 'artemis' }],
 		keywords: ['与圧ローバ', 'pressurized rover', 'lunar rover', '月面ローバ'],
 	},
 	{
@@ -164,7 +161,7 @@ export function listProjectPages(): ProjectConfig[] {
 
 /** @deprecated Prefer listInScopeProjects for UI lists. */
 export function listCatalogProjects(): ProjectConfig[] {
-	return listInScopeProjects();
+	return PROJECTS.filter((p) => p.slug !== 'unassigned');
 }
 
 export function relationLabelJa(type: ProjectRelationType): string {
