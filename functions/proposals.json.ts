@@ -1,5 +1,5 @@
-import { loadProposalsFromD1 } from '../../shared/proposals/d1-store';
-import type { ProposalsFile } from '../_lib/store';
+import { loadProposalsFromD1 } from './_lib/d1-proposals';
+import type { ProposalsFile } from './_lib/store';
 
 interface Env {
 	DB: D1Database;

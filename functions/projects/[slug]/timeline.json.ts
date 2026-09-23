@@ -1,4 +1,4 @@
-import type { TimelineEvent } from '../_lib/timeline-types';
+import type { TimelineEvent } from '../../_lib/timeline-types';
 
 interface Env {
 	DB: D1Database;

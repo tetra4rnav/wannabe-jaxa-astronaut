@@ -1,4 +1,4 @@
-import { loadProposalsFromD1 } from '../../../shared/proposals/d1-store';
+import { loadProposalsFromD1 } from '../_lib/d1-proposals';
 
 interface Env {
 	DB: D1Database;

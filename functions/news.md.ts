@@ -1,5 +1,5 @@
-import { newsFileToMarkdown } from '../_lib/store';
-import { loadNewsFromD1 } from '../../shared/news/d1-store';
+import { newsFileToMarkdown } from './_lib/store';
+import { loadNewsFromD1 } from './_lib/d1-news';
 
 interface Env {
 	DB: D1Database;

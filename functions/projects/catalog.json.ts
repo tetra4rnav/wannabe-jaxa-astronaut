@@ -1,4 +1,4 @@
-import type { ProjectRow } from './_lib/timeline-types';
+import type { ProjectRow } from '../_lib/timeline-types';
 
 interface Env {
 	DB: D1Database;
