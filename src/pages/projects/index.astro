@@ -1,28 +1,48 @@
 ---
 import SiteLayout from '../../layouts/SiteLayout.astro';
-import { listCatalogProjects } from '../../config/projects';
-import SiteDisclaimer from '../../components/SiteDisclaimer.astro';
+import {
+	listInScopeProjects,
+	phaseLabelJa,
+	relationLabelJa,
+	PROJECT_BY_SLUG,
+} from '../../config/projects';
 
 export const prerender = true;
 
-const projects = listCatalogProjects();
+const projects = listInScopeProjects();
 ---
 
 <SiteLayout
 	title="プロジェクト時系列"
-	description="公式資料とニュースをプロジェクトごとの時間軸で並べます。"
+	description="公式資料とニュースを、進行中・計画中の有人計画ごとの時間軸で並べます。"
 	skipMdAlternate
 >
-	<SiteDisclaimer>
-		分類は人手のカタログに対するキーワード照合です。未分類は「未分類」に残します。
-	</SiteDisclaimer>
-
-	<ul class="space-y-3">
+	<ul class="space-y-4">
 		{
 			projects.map((p) => (
-				<li>
-					<a href={`/projects/${p.slug}/`}>{p.nameJa}</a>
-					<span class="text-sm text-muted-foreground"> — {p.nameEn}</span>
+				<li class="rounded-md border border-border p-3">
+					<a href={`/projects/${p.slug}/`} class="font-medium">
+						{p.nameJa}
+					</a>
+					<span class="text-sm text-muted-foreground">
+						{' '}
+						— {p.nameEn}
+						{p.phase ? ` · ${phaseLabelJa(p.phase)}` : ''}
+						{p.role === 'seed' ? ' · 種' : p.role === 'related' ? ' · 関係先' : ''}
+					</span>
+					{p.relations && p.relations.length > 0 ? (
+						<ul class="mt-2 space-y-0.5 text-sm text-muted-foreground">
+							{p.relations.map((r) => {
+								const target = PROJECT_BY_SLUG[r.target];
+								return (
+									<li>
+										{relationLabelJa(r.type)} →{' '}
+										<a href={`/projects/${r.target}/`}>{target?.nameJa ?? r.target}</a>
+									</li>
+								);
+							})}
+						</ul>
+					) : null}
 				</li>
 			))
 		}

@@ -1,13 +1,17 @@
 ---
 import SiteLayout from '../../layouts/SiteLayout.astro';
-import { PROJECT_BY_SLUG, listCatalogProjects } from '../../config/projects';
+import {
+	PROJECT_BY_SLUG,
+	listProjectPages,
+	phaseLabelJa,
+	relationLabelJa,
+} from '../../config/projects';
 import { ProjectTimeline } from '../../components/ProjectTimeline';
-import SiteDisclaimer from '../../components/SiteDisclaimer.astro';
 
 export const prerender = true;
 
 export function getStaticPaths() {
-	return listCatalogProjects().map((p) => ({ params: { slug: p.slug } }));
+	return listProjectPages().map((p) => ({ params: { slug: p.slug } }));
 }
 
 const { slug } = Astro.params;
@@ -21,24 +25,35 @@ const project = slug ? PROJECT_BY_SLUG[slug] : undefined;
 	}
 	skipMdAlternate
 >
-	<SiteDisclaimer>
-		公式マイルストーンとニュースを混在表示します。Wiki 本文はこのページでは書き換えません。
-	</SiteDisclaimer>
-
 	{
 		project ? (
 			<>
 				<p class="mb-4 text-sm text-muted-foreground">
 					{project.nameEn}
-					{project.wikiDocsId ? (
-						<>
-							{' '}
-							· <a href={`/${project.wikiDocsId}/`}>関連 Wiki</a>
-						</>
-					) : null}
+					{project.phase ? ` · ${phaseLabelJa(project.phase)}` : ''}
+					{project.role === 'seed'
+						? ' · 種'
+						: project.role === 'related'
+							? ' · 関係先'
+							: project.role === 'retired'
+								? ' · 引退'
+								: ''}
 					{' '}
 					· <a href={`/projects/${project.slug}/timeline.json`}>timeline.json</a>
 				</p>
+				{project.relations && project.relations.length > 0 ? (
+					<ul class="mb-4 space-y-1 text-sm">
+						{project.relations.map((r) => {
+							const target = PROJECT_BY_SLUG[r.target];
+							return (
+								<li>
+									{relationLabelJa(r.type)} →{' '}
+									<a href={`/projects/${r.target}/`}>{target?.nameJa ?? r.target}</a>
+								</li>
+							);
+						})}
+					</ul>
+				) : null}
 				<ProjectTimeline client:load slug={project.slug} />
 			</>
 		) : (

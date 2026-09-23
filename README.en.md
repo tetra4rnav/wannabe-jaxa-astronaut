@@ -1,39 +1,39 @@
-# Unofficial JAXA astronaut-applicant wiki
+# Wannabe JAXA astronaut!
 
 [日本語](./README.md)
 
-This repository is **not an official site of JAXA, NASA, ESA, or any other space agency.** For applications and official procedures, use each agency’s own pages.
+Places **ongoing and planned national and commercial crewed** spaceflight programs (including astronaut-adjacent program names) on timelines from official sources only, and accumulates them into a project-scoped knowledge base (RAG). Typed relations between programs (partner / depends_on / successor) live in the human catalog.
 
-## Four-stage loop
+For applications and official procedures, use each agency’s own pages.
 
 ```mermaid
 flowchart LR
-  News["自動: ニュースを集める / Auto: collect news"] --> Propose["LLM: Wikiの案を出す / LLM: propose wiki pages"]
-  Propose --> Human["人: Wikiを書く / Human: write the wiki"]
-  Human --> Audit["LLM: 事実を確かめる / LLM: check the facts"]
-  Audit --> Human
+  Past["Past official news and presses"] --> Gate["Ingest gate"]
+  Daily["Fresh official updates"] --> Gate
+  Gate --> Kb["Per-project RAG"]
+  Catalog["Catalog and relations"] --> Kb
+  Kb --> Timeline["Timelines"]
 ```
 
-## News and wiki
+Wiki study pages are a future track. Bodies are never auto-written.
 
-| | News | Wiki |
+## News and knowledge base
+
+| | News | Knowledge base |
 | --- | --- | --- |
-| What it is | Events from official feeds and official X | Human-written study summaries |
+| What it is | Events from official feeds and official X | Chunks of gated official text |
 | Sources | Official distribution and posts | Allowlisted official URLs only |
-| How to read | Not only by recency—in the timeline of a program or project | Canonical pages by theme |
-| LLM role | May help with collection | Proposes and audits only; does not write bodies |
+| How to read | In each program’s chronological flow | As grounding for the same program |
 
-The diagram is the relationship. News sparks work; the LLM proposes wiki pages; a person writes from official sources; the LLM checks facts. Do not copy news text into the wiki. Journalism is not a wiki source.
+Journalism is not a citation. Do not copy news text into wiki pages.
 
 ## Who it is for
 
-A study site for people who want to become JAXA astronauts, and for anyone learning Japan’s human spaceflight from primary official sources. It is not an application desk and not a breaking-news outlet.
+Anyone following Japan-linked crewed programs and related international or commercial efforts from primary official sources. It is not an application desk and not a breaking-news outlet.
 
 ## Site
 
 - Live site: https://wannabe-jaxa-astronaut.diaphana.io
 - GitHub: https://github.com/tetra4rnav/wannabe-jaxa-astronaut
-
-To add wiki pages, write Markdown and cite official URLs. Steps are on [About](https://wannabe-jaxa-astronaut.diaphana.io/about/).
 
 Developer specs live in [docs/](./docs/).

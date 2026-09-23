@@ -1,27 +1,27 @@
 ---
 import SiteLayout from '../layouts/SiteLayout.astro';
 import { NewsFeed } from '../components/NewsFeed';
-import SiteDisclaimer from '../components/SiteDisclaimer.astro';
 import {
 	Card,
 	CardDescription,
 	CardHeader,
 	CardTitle,
 } from '../components/ui/card';
-import { getWikiThemes } from '../lib/docs';
+import {
+	listInScopeProjects,
+	phaseLabelJa,
+	relationLabelJa,
+	PROJECT_BY_SLUG,
+} from '../config/projects';
 import { loadNewsFile } from '../lib/news-store';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../lib/site';
 
 const news = await loadNewsFile();
-const themes = await getWikiThemes();
+const projects = listInScopeProjects();
 const HOME_NEWS_LIMIT = 5;
 ---
 
 <SiteLayout title={SITE_TITLE} description={SITE_DESCRIPTION} docsId="index" heading={false}>
-	<SiteDisclaimer>
-		本サイトは宇宙機関の公式サイトではありません。タイトル・短文の日本語は機械翻訳の場合があります。
-	</SiteDisclaimer>
-
 	<section class="mb-10">
 		<div class="mb-4 flex flex-wrap items-end justify-between gap-2">
 			<h2 class="text-xl font-semibold tracking-tight">ニュース</h2>
@@ -33,22 +33,41 @@ const HOME_NEWS_LIMIT = 5;
 	</section>
 
 	<section>
-		<h2 class="mb-4 text-xl font-semibold tracking-tight">Wiki</h2>
-		<p class="mb-4 text-sm text-muted-foreground">主なテーマ</p>
+		<div class="mb-4 flex flex-wrap items-end justify-between gap-2">
+			<h2 class="text-xl font-semibold tracking-tight">有人計画</h2>
+			<a href="/projects/" class="text-sm text-primary underline-offset-4 hover:underline">
+				すべてのプロジェクト
+			</a>
+		</div>
+		<p class="mb-4 text-sm text-muted-foreground">
+			進行中・計画中の公式な計画名。主題ではなくプロジェクト単位です。
+		</p>
 		{
-			themes.length === 0 ? (
-				<p class="text-sm text-muted-foreground">テーマがまだありません。</p>
+			projects.length === 0 ? (
+				<p class="text-sm text-muted-foreground">計画がまだありません。</p>
 			) : (
 				<div class="grid gap-4 sm:grid-cols-2">
-					{themes.map((theme) => (
-						<a href={theme.href} class="block no-underline">
+					{projects.map((p) => (
+						<a href={`/projects/${p.slug}/`} class="block no-underline">
 							<Card className="h-full transition-colors hover:bg-muted/40">
 								<CardHeader>
-									<CardTitle>{theme.title}</CardTitle>
-									{theme.description ? (
-										<CardDescription>{theme.description}</CardDescription>
-									) : null}
+									<CardTitle>{p.nameJa}</CardTitle>
+									<CardDescription>
+										{`${p.nameEn}${p.phase ? ` · ${phaseLabelJa(p.phase)}` : ''}${p.role === 'seed' ? ' · 種' : p.role === 'related' ? ' · 関係先' : ''}`}
+									</CardDescription>
 								</CardHeader>
+								{p.relations && p.relations.length > 0 ? (
+									<ul class="space-y-0.5 px-6 pb-4 text-xs text-muted-foreground">
+										{p.relations.map((r) => {
+											const target = PROJECT_BY_SLUG[r.target];
+											return (
+												<li>
+													{relationLabelJa(r.type)} → {target?.nameJa ?? r.target}
+												</li>
+											);
+										})}
+									</ul>
+								) : null}
 							</Card>
 						</a>
 					))}

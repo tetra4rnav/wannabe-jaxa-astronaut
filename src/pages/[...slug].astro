@@ -1,7 +1,6 @@
 ---
 import { render } from 'astro:content';
 import SiteLayout from '../layouts/SiteLayout.astro';
-import SiteDisclaimer from '../components/SiteDisclaimer.astro';
 import FactCheckHistory from '../components/FactCheckHistory.astro';
 import { WikiMermaid } from '../components/WikiMermaid';
 import {
@@ -33,9 +32,6 @@ const showFactCheck = docsId.includes('/');
 	description={entry.data.description}
 	docsId={docsId}
 >
-	<SiteDisclaimer>
-		本サイトは JAXA・宇宙機関の公式サイトではありません。Wiki は公式一次資料のみを根拠にしています。
-	</SiteDisclaimer>
 	{entry.data.sources?.length ? (
 		<p class="mb-4 text-sm text-muted-foreground">
 			出典:{' '}

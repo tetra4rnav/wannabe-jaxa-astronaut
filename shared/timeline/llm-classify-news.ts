@@ -1,7 +1,7 @@
 import type { NewsItem } from '../../src/utils/news-types.ts';
 import type { ProjectSlug } from '../../src/config/projects.ts';
-import { PROJECTS } from '../../src/config/projects.ts';
-import { filterCatalogSlugs, isCatalogSlug } from './classify.ts';
+import { listInScopeProjects } from '../../src/config/projects.ts';
+import { filterCatalogSlugs, isCatalogSlug, isInScopeSlug } from './classify.ts';
 import {
 	runJevJudgment,
 	type FeedbackScore,
@@ -22,7 +22,7 @@ export const JEV_NOUL_THRESHOLD = 0.55;
 const INGEST_KEY = 'ingestAsSource';
 
 function catalogProjects() {
-	return PROJECTS.filter((p) => p.slug !== 'unassigned');
+	return listInScopeProjects();
 }
 
 export function buildJevNewsQuestions(): JevQuestions {
@@ -30,7 +30,7 @@ export function buildJevNewsQuestions(): JevQuestions {
 		[INGEST_KEY]: {
 			type: 'noul',
 			instructions:
-				'Is this item news-like (a factual update or official announcement) and trustworthy as official-adjacent evidence for a study wiki RAG corpus?',
+				'Is this item news-like (a factual update or official announcement) and trustworthy as official-adjacent evidence for a crewed spaceflight project knowledge base (RAG)?',
 			criteria: {
 				true: 'Official or official-adjacent news with concrete facts; suitable as evidence',
 				false: 'Rumor, opinion, empty stub, hub page, vibe post, or not news-like',
@@ -79,7 +79,7 @@ export function mapJevNewsAnswers(answers: Record<string, unknown> | null): {
 	for (const p of catalogProjects()) {
 		const n = noulValue(answers[p.slug]);
 		if (n === null) continue;
-		if (n >= JEV_NOUL_THRESHOLD && isCatalogSlug(p.slug)) {
+		if (n >= JEV_NOUL_THRESHOLD && isInScopeSlug(p.slug)) {
 			scored.push({ slug: p.slug, noul: n });
 		}
 	}

@@ -29,23 +29,18 @@ const folderOrder = ['_root', ...[...byFolder.keys()].filter((k) => k !== '_root
 
 <SiteLayout
 	title="サイトマップ"
-	description="Wiki・ニュース・機械可読ミラーへの静的リンク一覧。"
+	description="ニュース・プロジェクト時系列・機械可読ミラーへの静的リンク一覧。"
 	skipMdAlternate
 >
-	<aside class="site-disclaimer mb-4 rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm" role="note">
-		<strong>非公式:</strong> 本サイトは JAXA・宇宙機関の公式サイトではありません。クロール用の HTML
-		ハブです。
-	</aside>
-
 	<section class="mb-8">
 		<h2 class="mb-2 text-lg font-medium">主要ページ</h2>
 		<ul class="list-disc space-y-1 ps-5">
-			<li><a href="/">ホーム（ニュース）</a> · <a href="/index.md">index.md</a></li>
-			<li><a href="/">ニュース</a> · <a href="/news.md">news.md</a> · <a href="/news.json">news.json</a></li>
+			<li><a href="/">ホーム（ニュースと有人計画）</a> · <a href="/index.md">index.md</a></li>
+			<li><a href="/news/">ニュース</a> · <a href="/news.md">news.md</a> · <a href="/news.json">news.json</a></li>
 			<li><a href="/projects/">プロジェクト時系列</a> · <a href="/projects/catalog.json">catalog.json</a></li>
-			<li><a href="/proposals/">Wiki 構築提案</a> · <a href="/proposals.json">proposals.json</a></li>
 			<li><a href="/about/">このサイトについて</a> · <a href="/about.md">about.md</a></li>
 			<li><a href="/sitemap/">サイトマップ（このページ）</a></li>
+			<li><a href="/proposals/">Wiki 構築提案（将来計画）</a> · <a href="/proposals.json">proposals.json</a></li>
 		</ul>
 	</section>
 
