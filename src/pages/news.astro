@@ -1,7 +1,6 @@
 ---
 import SiteLayout from '../layouts/SiteLayout.astro';
 import { NewsFeed } from '../components/NewsFeed';
-import SiteDisclaimer from '../components/SiteDisclaimer.astro';
 import { loadNewsFile } from '../lib/news-store';
 
 const news = await loadNewsFile();
@@ -18,10 +17,6 @@ const regions = [
 ---
 
 <SiteLayout title="ニュース" description="各国公式ニュースの原語＋日本語対照" skipMdAlternate>
-	<SiteDisclaimer>
-		本サイトは宇宙機関の公式サイトではありません。タイトル・短文の日本語は機械翻訳の場合があります。
-	</SiteDisclaimer>
-
 	<form class="news-filters mb-4 flex flex-wrap gap-4" method="get">
 		<label class="text-sm">
 			地域

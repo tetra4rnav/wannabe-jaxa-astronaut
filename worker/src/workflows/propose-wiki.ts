@@ -3,27 +3,21 @@ import {
 	type WorkflowEvent,
 	type WorkflowStep,
 } from 'cloudflare:workers';
-import { NEWS_KV_KEY } from '../../../shared/news/format.ts';
+import { loadNewsFromD1 } from '../../../shared/news/d1-store.ts';
 import { proposeForNewsItem } from '../../../shared/proposals/propose.ts';
-import { loadProposals, upsertProposal } from '../../../shared/proposals/store.ts';
+import {
+	loadProposalsFromD1,
+	upsertProposalInD1,
+} from '../../../shared/proposals/d1-store.ts';
+import { ensureCatalogSeeded } from '../../../shared/timeline/catalog.ts';
 import { retrievePriorChunks } from '../../../shared/timeline/retrieve.ts';
-import type { NewsFile, NewsItem } from '../../../src/utils/news-types.ts';
+import type { NewsItem } from '../../../src/utils/news-types.ts';
 import type { Env } from '../env.ts';
 
 const REPO = 'tetra4rnav/wannabe-jaxa-astronaut';
 const BATCH = 5;
 
 type ProposeParams = { newsIds?: string[] };
-
-async function loadNews(store: KVNamespace): Promise<NewsFile | null> {
-	const raw = await store.get(NEWS_KV_KEY);
-	if (!raw) return null;
-	try {
-		return JSON.parse(raw) as NewsFile;
-	} catch {
-		return null;
-	}
-}
 
 async function listWikiDocs(): Promise<{ id: string; title: string }[]> {
 	const treeRes = await fetch(
@@ -82,10 +76,16 @@ export class ProposeWikiWorkflow extends WorkflowEntrypoint<Env, ProposeParams> 
 	async run(event: WorkflowEvent<ProposeParams>, step: WorkflowStep) {
 		const preferIds = event.payload?.newsIds;
 
-		const news = await step.do('load news', async () => loadNews(this.env.STORE));
+		await step.do('ensure catalog seeded', async () => {
+			await ensureCatalogSeeded(this.env.DB);
+		});
+
+		const news = await step.do('load news', async () => loadNewsFromD1(this.env.DB));
 		if (!news?.items?.length) return { proposed: 0 };
 
-		const existing = await step.do('load proposals', async () => loadProposals(this.env.STORE));
+		const existing = await step.do('load proposals', async () =>
+			loadProposalsFromD1(this.env.DB),
+		);
 		const existingNewsIds = new Set(existing.items.map((p) => p.newsId));
 
 		const candidates = await step.do('pick candidates', async () =>
@@ -112,7 +112,7 @@ export class ProposeWikiWorkflow extends WorkflowEntrypoint<Env, ProposeParams> 
 					chunks,
 					wikiDocs,
 				});
-				await upsertProposal(this.env.STORE, proposal);
+				await upsertProposalInD1(this.env.DB, proposal);
 				n++;
 				return { id: proposal.id, action: proposal.action };
 			});

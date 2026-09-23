@@ -18,15 +18,15 @@
 		"id": "map-threshold-inclusive",
 		"jevAnswers": {
 			"ingestAsSource": { "type": "noul", "noul": 0.55 },
-			"htv": { "type": "noul", "noul": 0.55 },
+			"pressurized-rover": { "type": "noul", "noul": 0.55 },
 			"artemis": { "type": "noul", "noul": 0.54 }
 		},
 		"expect": {
 			"ingestAsSource": true,
-			"projectSlugs": ["htv"]
+			"projectSlugs": ["pressurized-rover"]
 		},
 		"assertions": [
-			"threshold 0.55 is inclusive; 0.54 must not assign a project"
+			"threshold 0.55 is inclusive; 0.54 must not assign a project; retired slugs are not classification targets"
 		]
 	},
 	{

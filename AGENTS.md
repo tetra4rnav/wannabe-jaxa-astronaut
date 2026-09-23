@@ -2,7 +2,7 @@
 
 ## Project
 
-Unofficial study wiki for JAXA astronaut applicants. Humans write wiki pages from official primary sources. Automation collects news; an LLM proposes wiki work and fact-checks; it does **not** write or rewrite wiki bodies. See the four-stage loop in [`README.md`](./README.md).
+Unofficial site that places **current and planned crewed** (and astronaut-adjacent) spaceflight programs on official-source timelines and builds a project-scoped knowledge base (RAG). Humans own the project catalog and relations. Automation collects official news; an LLM gates ingest and may propose wiki work later. It does **not** write or rewrite wiki bodies. See [README.md](./README.md) and [REQ-20260922-1](./docs/specs/REQ-20260922-1-crewed-timelines.md).
 
 ## Important docs
 
@@ -10,7 +10,7 @@ Unofficial study wiki for JAXA astronaut applicants. Humans write wiki pages fro
 | --- | --- |
 | [`docs/DOMAIN.md`](./docs/DOMAIN.md) | Domain model |
 | [`docs/GLOSSARY.md`](./docs/GLOSSARY.md) | Ubiquitous language — **use these terms** |
-| [`docs/BOUNDED_CONTEXT.md`](./docs/BOUNDED_CONTEXT.md) | News vs Wiki vs Corpus vs Site |
+| [`docs/BOUNDED_CONTEXT.md`](./docs/BOUNDED_CONTEXT.md) | News vs Knowledge base vs Catalog vs Wiki vs Site |
 | [`docs/specs/`](./docs/specs/) | Numbered REQ / ADR / VER (technical source of truth) |
 | [`docs/specs/_templates/`](./docs/specs/_templates/) | Spec templates |
 
@@ -19,10 +19,11 @@ Visitor READMEs stay free of commands, secrets, and schemas. Put those in VER / 
 ## Conventions
 
 1. Domain wording follows [`docs/GLOSSARY.md`](./docs/GLOSSARY.md).
-2. Wiki cites allowlisted official URLs only ([`ADR-20260920-3`](./docs/specs/ADR-20260920-3-source-policy.md)); lists live in `src/config/`.
-3. LLMs propose and audit; humans write wiki Markdown.
-4. **Commit messages stay short** (one or two sentences, why-focused). No long bullet lists of implementation detail.
-5. Do not put operator tables back into README.
+2. Corpus and wiki cite allowlisted official URLs only ([`ADR-20260920-3`](./docs/specs/ADR-20260920-3-source-policy.md)); lists live in `src/config/`.
+3. Catalog rules and relations: [`ADR-20260922-2`](./docs/specs/ADR-20260922-2-crewed-project-relations.md). Classifiers emit **in-scope** slugs only.
+4. LLMs propose and audit; humans write wiki Markdown when that track resumes.
+5. **Commit messages stay short** (one or two sentences, why-focused). No long bullet lists of implementation detail.
+6. Do not put operator tables back into README.
 
 ## Development
 

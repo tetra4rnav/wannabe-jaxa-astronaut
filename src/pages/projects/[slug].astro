@@ -1,17 +1,31 @@
 ---
 import SiteLayout from '../../layouts/SiteLayout.astro';
-import { PROJECT_BY_SLUG, listCatalogProjects } from '../../config/projects';
+import {
+	countryFlag,
+	phaseLabelJa,
+	relationLabelJa,
+	type ProjectConfig,
+} from '../../config/projects';
 import { ProjectTimeline } from '../../components/ProjectTimeline';
-import SiteDisclaimer from '../../components/SiteDisclaimer.astro';
+import { loadCatalog, projectBySlugFrom } from '../../../shared/timeline/catalog';
 
-export const prerender = true;
-
-export function getStaticPaths() {
-	return listCatalogProjects().map((p) => ({ params: { slug: p.slug } }));
-}
+export const prerender = false;
 
 const { slug } = Astro.params;
-const project = slug ? PROJECT_BY_SLUG[slug] : undefined;
+
+let catalog: ProjectConfig[] = await loadCatalog(null);
+try {
+	const { env } = await import('cloudflare:workers');
+	catalog = await loadCatalog(env.DB);
+} catch {
+	/* local */
+}
+const bySlug = projectBySlugFrom(catalog);
+const project = slug ? bySlug[slug] : undefined;
+const flags =
+	project?.countries && project.countries.length > 0
+		? project.countries.map((c) => countryFlag(c)).join('')
+		: '';
 ---
 
 <SiteLayout
@@ -21,32 +35,51 @@ const project = slug ? PROJECT_BY_SLUG[slug] : undefined;
 	}
 	skipMdAlternate
 >
-	<SiteDisclaimer>
-		公式マイルストーンとニュースを混在表示します。Wiki 本文はこのページでは書き換えません。
-	</SiteDisclaimer>
-
 	{
 		project ? (
 			<>
+				{(flags || project.kindJa) && (
+					<p class="mb-2 text-sm">
+						{flags ? (
+							<span class="tracking-wide" title={project.countries?.join(', ')}>
+								{flags}
+							</span>
+						) : null}
+						{flags && project.kindJa ? ' · ' : null}
+						{project.kindJa ? (
+							<span class="text-muted-foreground">{project.kindJa}</span>
+						) : null}
+					</p>
+				)}
 				<p class="mb-4 text-sm text-muted-foreground">
 					{project.nameEn}
-					{project.wikiDocsId ? (
-						<>
-							{' '}
-							· <a href={`/${project.wikiDocsId}/`}>関連 Wiki</a>
-						</>
-					) : null}
-					{' '}
+					{project.phase ? ` · ${phaseLabelJa(project.phase)}` : ''}
+					{project.role === 'seed'
+						? ' · 種'
+						: project.role === 'related'
+							? ' · 関係先'
+							: project.role === 'retired'
+								? ' · 引退'
+								: ''}{' '}
 					· <a href={`/projects/${project.slug}/timeline.json`}>timeline.json</a>
 				</p>
-				<ProjectTimeline client:load slug={project.slug} />
+				{project.relations && project.relations.length > 0 ? (
+					<ul class="mb-6 space-y-0.5 text-sm text-muted-foreground">
+						{project.relations.map((r) => {
+							const target = bySlug[r.target];
+							return (
+								<li>
+									{relationLabelJa(r.type)} →{' '}
+									<a href={`/projects/${r.target}/`}>{target?.nameJa ?? r.target}</a>
+								</li>
+							);
+						})}
+					</ul>
+				) : null}
+				<ProjectTimeline client:load projectSlug={project.slug} />
 			</>
 		) : (
-			<p>不明なプロジェクトです。</p>
+			<p class="text-sm text-muted-foreground">プロジェクトが見つかりません。</p>
 		)
 	}
-
-	<p class="mt-6">
-		<a href="/projects/">← プロジェクト一覧</a>
-	</p>
 </SiteLayout>

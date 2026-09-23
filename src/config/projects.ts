@@ -10,21 +10,41 @@ export type ProjectSlug =
 	| 'commercial-leo'
 	| 'unassigned';
 
+export type ProjectPhase = 'ongoing' | 'planned';
+export type ProjectRole = 'seed' | 'related' | 'retired';
+export type ProjectRelationType = 'partner' | 'depends_on' | 'successor';
+export type CountryCode = 'JP' | 'US' | 'CA' | 'EU' | 'RU';
+
+export interface ProjectRelation {
+	type: ProjectRelationType;
+	target: ProjectSlug;
+}
+
 export interface ProjectConfig {
 	slug: ProjectSlug;
 	nameJa: string;
 	nameEn: string;
-	/** Optional wiki docs id */
+	/** Optional wiki docs id (legacy; Wiki is deferred) */
 	wikiDocsId?: string;
 	startDate?: string;
 	endDate?: string | null;
-	/** Lowercase keywords / phrases for classifier */
+	/** Lowercase keywords / phrases for display and feed heuristics */
 	keywords: string[];
+	/** Present for seed / related only */
+	phase?: ProjectPhase;
+	/** omitted for unassigned */
+	role?: ProjectRole;
+	relations?: ProjectRelation[];
+	/** Display only — not used by classify / corpus / Vectorize / ingest gate / graph expand */
+	countries?: CountryCode[];
+	/** Display only — not used by classify / corpus / Vectorize / ingest gate / graph expand */
+	kindJa?: string;
 }
 
 /**
- * Human-owned program catalog. Classifiers may only emit these slugs
- * (plus unassigned). Do not invent new slugs in LLM output.
+ * Human-owned program catalog. Classifiers may only emit in-scope slugs
+ * (seed / related) or unassigned. Do not invent new slugs in LLM output.
+ * Retired slugs stay for page generation and old event links.
  */
 export const PROJECTS: ProjectConfig[] = [
 	{
@@ -33,6 +53,10 @@ export const PROJECTS: ProjectConfig[] = [
 		nameEn: 'ISS / Kibo',
 		wikiDocsId: 'policy/japan-human-spaceflight',
 		startDate: '1998-11-20',
+		phase: 'ongoing',
+		role: 'seed',
+		countries: ['JP', 'US', 'CA', 'EU', 'RU'],
+		kindJa: 'ISS',
 		keywords: [
 			'iss',
 			'国際宇宙ステーション',
@@ -40,7 +64,7 @@ export const PROJECTS: ProjectConfig[] = [
 			'kibo',
 			'station',
 			'мкс',
-			'天宫', // cross-ref noise filtered by region elsewhere
+			'天宫',
 		],
 	},
 	{
@@ -48,6 +72,7 @@ export const PROJECTS: ProjectConfig[] = [
 		nameJa: 'HTV / HTV-X',
 		nameEn: 'HTV / HTV-X',
 		startDate: '2009-09-10',
+		role: 'retired',
 		keywords: ['htv', 'こうのとり', 'htv-x', 'kounotori'],
 	},
 	{
@@ -56,6 +81,10 @@ export const PROJECTS: ProjectConfig[] = [
 		nameEn: 'Artemis',
 		wikiDocsId: 'policy/japan-human-spaceflight',
 		startDate: '2017-01-01',
+		phase: 'ongoing',
+		role: 'seed',
+		countries: ['JP', 'US'],
+		kindJa: '月探査',
 		keywords: ['artemis', 'アルテミス', 'orion', 'sls'],
 	},
 	{
@@ -63,6 +92,11 @@ export const PROJECTS: ProjectConfig[] = [
 		nameJa: 'ゲートウェイ',
 		nameEn: 'Lunar Gateway',
 		startDate: '2019-01-01',
+		phase: 'planned',
+		role: 'related',
+		relations: [{ type: 'partner', target: 'artemis' }],
+		countries: ['JP', 'US', 'EU', 'CA'],
+		kindJa: '月軌道',
 		keywords: ['gateway', 'ゲートウェイ', 'lunar gateway'],
 	},
 	{
@@ -70,6 +104,14 @@ export const PROJECTS: ProjectConfig[] = [
 		nameJa: '有人与圧ローバ',
 		nameEn: 'Pressurized rover',
 		wikiDocsId: 'society/lunar-society',
+		phase: 'planned',
+		role: 'seed',
+		relations: [
+			{ type: 'partner', target: 'artemis' },
+			{ type: 'depends_on', target: 'artemis' },
+		],
+		countries: ['JP', 'US'],
+		kindJa: '月面',
 		keywords: ['与圧ローバ', 'pressurized rover', 'lunar rover', '月面ローバ'],
 	},
 	{
@@ -77,6 +119,7 @@ export const PROJECTS: ProjectConfig[] = [
 		nameJa: '宇宙飛行士選抜',
 		nameEn: 'Astronaut selection',
 		wikiDocsId: 'astronauts/overview',
+		role: 'retired',
 		keywords: [
 			'宇宙飛行士',
 			'astronaut',
@@ -91,18 +134,25 @@ export const PROJECTS: ProjectConfig[] = [
 		nameJa: '宇宙基本計画',
 		nameEn: 'Basic Plan on Space Policy',
 		wikiDocsId: 'policy/space-basic-plan',
+		role: 'retired',
 		keywords: ['宇宙基本計画', 'space basic plan', '宇宙政策', '宇宙予算'],
 	},
 	{
 		slug: 'h3',
 		nameJa: 'H3',
 		nameEn: 'H3 launch vehicle',
+		role: 'retired',
 		keywords: ['h3', 'h-iiia', 'h-iia', 'ロケット'],
 	},
 	{
 		slug: 'commercial-leo',
 		nameJa: '商業低軌道',
 		nameEn: 'Commercial LEO',
+		phase: 'planned',
+		role: 'related',
+		relations: [{ type: 'successor', target: 'iss-kibo' }],
+		countries: ['US'],
+		kindJa: '商業低軌道',
 		keywords: ['commercial leo', '商業低軌道', 'axiom', 'starlab', 'ポストiss', 'post-iss'],
 	},
 	{
@@ -117,6 +167,47 @@ export const PROJECT_BY_SLUG: Record<string, ProjectConfig> = Object.fromEntries
 	PROJECTS.map((p) => [p.slug, p]),
 );
 
-export function listCatalogProjects(): ProjectConfig[] {
+/** Seed + related — visitor lists and new classification targets. */
+export function listInScopeProjects(): ProjectConfig[] {
+	return PROJECTS.filter((p) => p.role === 'seed' || p.role === 'related');
+}
+
+/** All named projects including retired — static `/projects/{slug}/` pages. */
+export function listProjectPages(): ProjectConfig[] {
 	return PROJECTS.filter((p) => p.slug !== 'unassigned');
+}
+
+/** @deprecated Prefer listInScopeProjects for UI lists. */
+export function listCatalogProjects(): ProjectConfig[] {
+	return listInScopeProjects();
+}
+
+export function countryFlag(code: CountryCode): string {
+	switch (code) {
+		case 'JP':
+			return '🇯🇵';
+		case 'US':
+			return '🇺🇸';
+		case 'CA':
+			return '🇨🇦';
+		case 'EU':
+			return '🇪🇺';
+		case 'RU':
+			return '🇷🇺';
+	}
+}
+
+export function relationLabelJa(type: ProjectRelationType): string {
+	switch (type) {
+		case 'partner':
+			return '連携';
+		case 'depends_on':
+			return '依存';
+		case 'successor':
+			return '後継';
+	}
+}
+
+export function phaseLabelJa(phase: ProjectPhase): string {
+	return phase === 'ongoing' ? '進行中' : '計画中';
 }

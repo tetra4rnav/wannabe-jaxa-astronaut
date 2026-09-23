@@ -1,34 +1,60 @@
-/** Allowlist helpers for project catalog slugs (no keyword classification). */
+import { PROJECTS, type ProjectConfig, type ProjectSlug } from '../../src/config/projects.ts';
+import { listInScopeFrom } from './catalog.ts';
 
-import { PROJECTS, type ProjectSlug } from '../../src/config/projects.ts';
-
-const CATALOG = new Set(PROJECTS.map((p) => p.slug));
-
-export function catalogSlugs(): ProjectSlug[] {
-	return PROJECTS.map((p) => p.slug);
+/** Sync helpers over an explicit catalog (D1-loaded or seed). */
+export function catalogSlugsFrom(catalog: ProjectConfig[]): string[] {
+	return catalog.map((p) => p.slug);
 }
 
-export function catalogPromptLines(): string {
-	return PROJECTS.filter((p) => p.slug !== 'unassigned')
+export function inScopeSlugsFrom(catalog: ProjectConfig[]): string[] {
+	return listInScopeFrom(catalog).map((p) => p.slug);
+}
+
+export function catalogPromptLinesFrom(catalog: ProjectConfig[]): string {
+	return listInScopeFrom(catalog)
 		.map((p) => `- ${p.slug}: ${p.nameJa} / ${p.nameEn}`)
 		.join('\n');
 }
 
-/** Keep only known catalog slugs; empty → unassigned. Never invent. */
-export function filterCatalogSlugs(raw: unknown): ProjectSlug[] {
+export function filterCatalogSlugsFrom(raw: unknown, catalog: ProjectConfig[]): ProjectSlug[] {
+	const inScope = new Set(listInScopeFrom(catalog).map((p) => p.slug));
 	if (!Array.isArray(raw)) return ['unassigned'];
 	const out: ProjectSlug[] = [];
 	const seen = new Set<string>();
 	for (const x of raw) {
 		if (typeof x !== 'string') continue;
 		const slug = x.trim();
-		if (!CATALOG.has(slug as ProjectSlug) || seen.has(slug)) continue;
+		if (!inScope.has(slug) || seen.has(slug)) continue;
 		seen.add(slug);
 		out.push(slug as ProjectSlug);
 	}
 	return out.length ? out : ['unassigned'];
 }
 
-export function isCatalogSlug(slug: string): slug is ProjectSlug {
-	return CATALOG.has(slug as ProjectSlug);
+/** @deprecated Prefer *From(catalog) with loadCatalog(db) */
+export function catalogSlugs(): ProjectSlug[] {
+	return PROJECTS.map((p) => p.slug);
+}
+
+/** @deprecated Prefer inScopeSlugsFrom */
+export function inScopeSlugs(): ProjectSlug[] {
+	return listInScopeFrom(PROJECTS).map((p) => p.slug);
+}
+
+/** @deprecated Prefer catalogPromptLinesFrom */
+export function catalogPromptLines(): string {
+	return catalogPromptLinesFrom(PROJECTS);
+}
+
+/** @deprecated Prefer filterCatalogSlugsFrom */
+export function filterCatalogSlugs(raw: unknown): ProjectSlug[] {
+	return filterCatalogSlugsFrom(raw, PROJECTS);
+}
+
+export function isCatalogSlug(slug: string, catalog: ProjectConfig[] = PROJECTS): boolean {
+	return catalog.some((p) => p.slug === slug);
+}
+
+export function isInScopeSlug(slug: string, catalog: ProjectConfig[] = PROJECTS): boolean {
+	return listInScopeFrom(catalog).some((p) => p.slug === slug);
 }

@@ -29,9 +29,8 @@ export async function llmsIndex(): Promise<string> {
 > ${SITE_DESCRIPTION}
 
 重要な制約:
-- 本サイトは JAXA / 宇宙機関の公式サイトではありません。
-- Wiki 本文・数字は許可ドメイン上の公式一次資料のみを根拠にします（Wikipedia・報道・SNSは出典にしない）。
-- エージェントは HTML を直接編集せず、リポジトリの Markdown を監査・加筆してください。手順は AGENTS.md を参照。
+- 進行中・計画中の有人宇宙飛行計画を、許可ドメイン上の公式一次資料だけで時系列と知識ベースに置きます（Wikipedia・報道・SNSは出典にしない）。
+- Wiki の学習ページは将来計画です。エージェントは HTML を直接編集せず、リポジトリの Markdown を監査・加筆する場合は AGENTS.md を参照。
 - 外部 RAG は /corpus/chunks.jsonl を取り込み、サイト内 Vectorize / チャット API はありません。
 
 ## ページ
@@ -40,9 +39,10 @@ ${links}
 
 ## 任意リンク
 
-- [エージェント契約 (AGENTS.md)](https://github.com/tetra4rnav/wannabe-jaxa-astronaut/blob/main/AGENTS.md): Wiki の読み書き・監査ルール
+- [エージェント契約 (AGENTS.md)](https://github.com/tetra4rnav/wannabe-jaxa-astronaut/blob/main/AGENTS.md): カタログ・監査ルール（Wiki は将来計画）
 - [RAG コーパス manifest](${SITE}/corpus/manifest.json): チャンク数・スキーマ版
 - [ニュース JSON](${SITE}/news.json): 原語＋日本語のニュース一覧
+- [プロジェクト一覧](${SITE}/projects/): 有人計画の時系列
 `;
 }
 

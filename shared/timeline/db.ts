@@ -1,29 +1,10 @@
-import { PROJECTS } from '../../src/config/projects.ts';
-
-export async function syncProjectsTable(db: D1Database): Promise<void> {
-	for (const p of PROJECTS) {
-		await db
-			.prepare(
-				`INSERT INTO projects (slug, name_ja, name_en, wiki_docs_id, start_date, end_date)
-         VALUES (?, ?, ?, ?, ?, ?)
-         ON CONFLICT(slug) DO UPDATE SET
-           name_ja=excluded.name_ja,
-           name_en=excluded.name_en,
-           wiki_docs_id=excluded.wiki_docs_id,
-           start_date=excluded.start_date,
-           end_date=excluded.end_date`,
-			)
-			.bind(
-				p.slug,
-				p.nameJa,
-				p.nameEn,
-				p.wikiDocsId ?? null,
-				p.startDate ?? null,
-				p.endDate ?? null,
-			)
-			.run();
-	}
-}
+export {
+	ensureCatalogSeeded,
+	syncProjectsTable,
+	loadCatalog,
+	upsertProjectConfig,
+	retireProject,
+} from './catalog.ts';
 
 export async function upsertEvent(
 	db: D1Database,
@@ -80,4 +61,53 @@ export async function enqueueDocument(
 		)
 		.bind(row.url, row.title, row.sourceType, row.projectSlug, row.occurredAt ?? null)
 		.run();
+}
+
+export async function documentStatusCounts(db: D1Database): Promise<Record<string, number>> {
+	const { results } = await db
+		.prepare(`SELECT status, COUNT(*) AS n FROM documents GROUP BY status`)
+		.all<{ status: string; n: number }>();
+	const out: Record<string, number> = {
+		pending: 0,
+		ingested: 0,
+		failed: 0,
+		skipped: 0,
+	};
+	for (const r of results ?? []) {
+		out[r.status] = Number(r.n);
+	}
+	return out;
+}
+
+export async function recentDocuments(
+	db: D1Database,
+	statuses: string[],
+	limit = 10,
+): Promise<
+	{
+		id: number;
+		url: string;
+		title: string | null;
+		project_slug: string;
+		status: string;
+		error: string | null;
+	}[]
+> {
+	const placeholders = statuses.map(() => '?').join(',');
+	const { results } = await db
+		.prepare(
+			`SELECT id, url, title, project_slug, status, error FROM documents
+       WHERE status IN (${placeholders})
+       ORDER BY id DESC LIMIT ?`,
+		)
+		.bind(...statuses, limit)
+		.all();
+	return (results ?? []) as {
+		id: number;
+		url: string;
+		title: string | null;
+		project_slug: string;
+		status: string;
+		error: string | null;
+	}[];
 }

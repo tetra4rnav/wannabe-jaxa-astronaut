@@ -7,6 +7,7 @@ import type { NavGroup } from '@/lib/docs';
 
 type Props = {
 	groups: NavGroup[];
+	/** Pathname, or pathname+search for query-based nav (admin) */
 	currentPath: string;
 };
 
@@ -46,8 +47,17 @@ function applyWidth(open: boolean, mobile: boolean) {
 }
 
 function isActive(href: string, currentPath: string): boolean {
-	if (href === '/') return currentPath === '/';
-	return currentPath === href || currentPath.startsWith(href);
+	if (href === '/') return currentPath === '/' || currentPath.startsWith('/?');
+	if (href.includes('?')) {
+		const hrefUrl = new URL(href, 'https://example.local');
+		const curUrl = new URL(currentPath, 'https://example.local');
+		if (hrefUrl.pathname !== curUrl.pathname) return false;
+		const hrefSection = hrefUrl.searchParams.get('section') ?? 'catalog';
+		const curSection = curUrl.searchParams.get('section') ?? 'catalog';
+		return hrefSection === curSection;
+	}
+	const pathOnly = currentPath.split('?')[0] ?? currentPath;
+	return pathOnly === href || pathOnly.startsWith(href);
 }
 
 function groupContainsPath(group: NavGroup, currentPath: string): boolean {

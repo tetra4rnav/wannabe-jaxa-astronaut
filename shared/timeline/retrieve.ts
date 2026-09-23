@@ -1,4 +1,6 @@
+import { loadCatalog } from './catalog.ts';
 import { embedTexts } from './ingest.ts';
+import { expandRetrievalSlugs } from './project-graph.ts';
 
 export type RetrievedChunk = {
 	id: string;
@@ -14,11 +16,13 @@ type RetrieveEnv = {
 	AI: Ai;
 	VECTORIZE: VectorizeIndex;
 	CHUNKS: R2Bucket;
+	DB?: D1Database;
 };
 
 /**
- * Same-project chunks with occurred_at on or before the news date.
- * Prefers official / paper; falls back to gated news if needed.
+ * Classified-project (+ 1-hop relation expansion) chunks with occurred_at
+ * on or before the news date. Prefers official / paper; falls back to gated
+ * news if needed. Same-project matches sort ahead of expansion-only hits.
  */
 export async function retrievePriorChunks(
 	env: RetrieveEnv,
@@ -29,7 +33,12 @@ export async function retrievePriorChunks(
 		topK?: number;
 	},
 ): Promise<RetrievedChunk[]> {
-	const projects = opts.projectSlugs.filter((s) => s && s !== 'unassigned');
+	const classified = opts.projectSlugs.filter((s) => s && s !== 'unassigned');
+	if (!classified.length) return [];
+
+	const classifiedSet = new Set(classified);
+	const catalog = env.DB ? await loadCatalog(env.DB) : undefined;
+	const projects = expandRetrievalSlugs(classified, catalog ? { catalog } : undefined);
 	if (!projects.length) return [];
 
 	const date = opts.occurredAt.slice(0, 10);
@@ -87,5 +96,13 @@ export async function retrievePriorChunks(
 			text: text.slice(0, 1200),
 		});
 	}
+
+	out.sort((a, b) => {
+		const aClassified = classifiedSet.has(a.project) ? 0 : 1;
+		const bClassified = classifiedSet.has(b.project) ? 0 : 1;
+		if (aClassified !== bClassified) return aClassified - bClassified;
+		return (b.score ?? 0) - (a.score ?? 0);
+	});
+
 	return out;
 }

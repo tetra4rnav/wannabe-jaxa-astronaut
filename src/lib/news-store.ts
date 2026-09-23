@@ -1,7 +1,6 @@
 import type { NewsFile } from '@/utils/news-types';
 import localNews from '@/data/news.json';
-
-export const NEWS_KV_KEY = 'news:file';
+import { loadNewsFromD1 } from '../../shared/news/d1-store.ts';
 
 const empty: NewsFile = {
 	updatedAt: new Date(0).toISOString(),
@@ -16,14 +15,13 @@ function asNewsFile(raw: unknown): NewsFile | null {
 	return file;
 }
 
-/** Live news from KV when bound; otherwise bundled `src/data/news.json`. */
+/** Live news from D1 when bound; otherwise bundled `src/data/news.json`. */
 export async function loadNewsFile(): Promise<NewsFile> {
 	try {
 		const { env } = await import('cloudflare:workers');
-		const fromKv = await env.STORE?.get(NEWS_KV_KEY);
-		if (fromKv) {
-			const parsed = asNewsFile(JSON.parse(fromKv));
-			if (parsed) return parsed;
+		if (env.DB) {
+			const fromD1 = await loadNewsFromD1(env.DB);
+			if (fromD1.items.length) return fromD1;
 		}
 	} catch {
 		/* local Node prerender / missing binding */

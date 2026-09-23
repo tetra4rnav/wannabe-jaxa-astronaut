@@ -16,11 +16,22 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 *.log
+.preview-*
+
+# temp / scratch (gh body files, local scratch)
+*.tmp
+*.temp
+.tmp*
+.tmp/
+temp/
+.tmp-*.md
 
 # environment variables
 .env
 .env.*
 !.env.example
 
-# macOS-specific files
+# OS
 .DS_Store
+Thumbs.db
+Desktop.ini

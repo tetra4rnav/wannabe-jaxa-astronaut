@@ -54,9 +54,9 @@ Source-domain audit runs on every local / CI build via `prebuild`. Scheduled new
 
 Do **not** enable Bot Fight Mode or AI crawler blocking; [`public/robots.txt`](../../public/robots.txt) is allow-all.
 
-Remaining Pages Functions under `functions/` may still serve `/news.md`, `/fact-checks/:id.json`, `/proposals.json` (plus `/proposals/:id.json`), and project timeline JSON when that surface is active. **`/news.json` is served by the Astro SSR app** (KV with bundled `src/data/news.json` fallback). Home (`/`), `/news/`, and `/news/[id]/` render news on the server from the same loader.
+Remaining Pages Functions under `functions/` may still serve `/news.md`, `/fact-checks/:id.json`, `/proposals.json` (plus `/proposals/:id.json`), and project timeline JSON when that surface is active. **`/news.json` is served by the Astro SSR app** (D1 `news_items`, with bundled `src/data/news.json` when D1 is unbound / empty). Home (`/`), `/news/`, and `/news/[id]/` render news on the server from the same loader.
 
-Bind on the public app: KV `STORE` → `wannabe-jaxa-store`, D1 `DB` → `wannabe-jaxa-db`.
+Bind on the public app: KV `STORE` → `wannabe-jaxa-store` (fact-check), D1 `DB` → `wannabe-jaxa-db` (catalog + news + proposals + timeline). After KV→D1 cutover, delete obsolete `news:*` / `proposals:file` keys ([VER-20260923-1](./VER-20260923-1-admin-and-d1.md)).
 
 ### Jobs Worker
 
@@ -68,7 +68,7 @@ Bind on the public app: KV `STORE` → `wannabe-jaxa-store`, D1 `DB` → `wannab
 | Manual run | `POST /run` with `Authorization: Bearer $RUN_SECRET` and JSON `{"job":"fetch-news"|"fact-check"|"ingest-corpus"|"propose-wiki"}` |
 | D1 migrate | `npx wrangler d1 migrations apply wannabe-jaxa-db --remote -c worker/wrangler.jsonc` |
 
-Shared pipeline: [`shared/news/`](../../shared/news/) (no filesystem). Timeline ingest / retrieve: [`shared/timeline/`](../../shared/timeline/). Wiki proposals: [`shared/proposals/`](../../shared/proposals/). LLM judgments: [`shared/opik/`](../../shared/opik/). Production news / fact-check / proposals JSON live in KV (`news:file`, `news:md`, `fact-check:{docsId}`, `proposals:file`). D1 holds projects / documents / events; R2 `wannabe-jaxa-chunks` + Vectorize `wannabe-jaxa-vectors` hold embeddings. FetchNews uses TypeSafe Jev (`typesafe/jev`) for project tags + ingest gate, then enqueues ProposeWiki for newly classified items.
+Shared pipeline: [`shared/news/`](../../shared/news/) (no filesystem). Timeline ingest / retrieve: [`shared/timeline/`](../../shared/timeline/). Wiki proposals: [`shared/proposals/`](../../shared/proposals/). LLM judgments: [`shared/opik/`](../../shared/opik/). **Today:** production news / fact-check / proposals JSON live in KV (`news:file`, `news:md`, `fact-check:{docsId}`, `proposals:file`); D1 holds projects / documents / events. **Target SoT** (catalog + news feed + proposals → D1): [ADR-20260923-1](./ADR-20260923-1-runtime-d1-sot.md), cutover checklist [VER-20260923-1](./VER-20260923-1-admin-and-d1.md), impl [#12](https://github.com/tetra4rnav/wannabe-jaxa-astronaut/issues/12). R2 `wannabe-jaxa-chunks` + Vectorize `wannabe-jaxa-vectors` hold embeddings. FetchNews uses TypeSafe Jev (`typesafe/jev`) for project tags + ingest gate, then enqueues ProposeWiki for newly classified items.
 
 ## Secrets & env
 
@@ -116,9 +116,11 @@ Workers AI uses the `AI` binding (no account REST token required on the Worker).
 | `IngestCorpusWorkflow` | `0 */12 * * *` | D1 documents/events; R2 chunks; Vectorize upserts |
 | `ProposeWikiWorkflow` | `15 */6 * * *` | KV `proposals:file` (same-project prior chunks; Opik-traced) |
 
-Human-owned project catalog: [`src/config/projects.ts`](../../src/config/projects.ts). Official seed URLs: [`src/config/corpus-seeds.ts`](../../src/config/corpus-seeds.ts).
+Human-owned project catalog seed: [`src/config/projects.ts`](../../src/config/projects.ts) (runtime SoT → D1 per [ADR-20260923-1](./ADR-20260923-1-runtime-d1-sot.md)). Official seed URLs: [`src/config/corpus-seeds.ts`](../../src/config/corpus-seeds.ts).
 
 ## Related
 
 - [AGENTS.md](../../AGENTS.md)
 - [ADR-20260920-1-pages-and-worker.md](./ADR-20260920-1-pages-and-worker.md)
+- [VER-20260923-1-admin-and-d1.md](./VER-20260923-1-admin-and-d1.md)
+- [ADR-20260923-1-runtime-d1-sot.md](./ADR-20260923-1-runtime-d1-sot.md)

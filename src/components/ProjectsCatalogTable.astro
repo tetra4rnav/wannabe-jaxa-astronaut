@@ -1,0 +1,113 @@
+---
+import { Badge } from './ui/badge';
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from './ui/table';
+import {
+	PROJECT_BY_SLUG,
+	countryFlag,
+	listInScopeProjects,
+	relationLabelJa,
+	type ProjectConfig,
+} from '../config/projects';
+
+interface Props {
+	projects?: ProjectConfig[];
+}
+
+const { projects: projectsProp } = Astro.props;
+const bySlug = {
+	...PROJECT_BY_SLUG,
+	...Object.fromEntries((projectsProp ?? []).map((p) => [p.slug, p])),
+};
+
+const projects = [...(projectsProp ?? listInScopeProjects())].sort((a, b) => {
+	const byKind = (a.kindJa ?? '').localeCompare(b.kindJa ?? '', 'ja');
+	if (byKind !== 0) return byKind;
+	return a.nameJa.localeCompare(b.nameJa, 'ja');
+});
+---
+
+{
+	projects.length === 0 ? (
+		<p class="text-sm text-muted-foreground">計画がまだありません。</p>
+	) : (
+		<Table>
+			<TableHeader>
+				<TableRow>
+					<TableHead>名前</TableHead>
+					<TableHead>国</TableHead>
+					<TableHead>種別</TableHead>
+					<TableHead>親</TableHead>
+					<TableHead>関係</TableHead>
+				</TableRow>
+			</TableHeader>
+			<TableBody>
+				{projects.map((p) => {
+					const parents = (p.relations ?? []).filter((r) => r.type === 'depends_on');
+					const edges = (p.relations ?? []).filter(
+						(r) => r.type === 'partner' || r.type === 'successor',
+					);
+					return (
+						<TableRow>
+							<TableCell>
+								<a href={`/projects/${p.slug}/`} class="font-medium">
+									{p.nameJa}
+								</a>
+							</TableCell>
+							<TableCell>
+								{p.countries && p.countries.length > 0 ? (
+									<span class="tracking-wide" title={p.countries.join(', ')}>
+										{p.countries.map((c) => countryFlag(c)).join('')}
+									</span>
+								) : (
+									<span class="text-muted-foreground">—</span>
+								)}
+							</TableCell>
+							<TableCell>
+								{p.kindJa ? p.kindJa : <span class="text-muted-foreground">—</span>}
+							</TableCell>
+							<TableCell>
+								{parents.length > 0 ? (
+									<span class="flex flex-wrap gap-1">
+										{parents.map((r) => {
+											const target = bySlug[r.target];
+											return (
+												<a href={`/projects/${r.target}/`}>
+													{target?.nameJa ?? r.target}
+												</a>
+											);
+										})}
+									</span>
+								) : (
+									<span class="text-muted-foreground">—</span>
+								)}
+							</TableCell>
+							<TableCell>
+								{edges.length > 0 ? (
+									<span class="flex flex-wrap gap-1">
+										{edges.map((r) => {
+											const target = bySlug[r.target];
+											return (
+												<Badge variant="outline">
+													{relationLabelJa(r.type)} → {target?.nameJa ?? r.target}
+												</Badge>
+											);
+										})}
+									</span>
+								) : (
+									<span class="text-muted-foreground">—</span>
+								)}
+							</TableCell>
+						</TableRow>
+					);
+				})}
+			</TableBody>
+		</Table>
+	)
+}

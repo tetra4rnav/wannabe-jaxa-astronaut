@@ -41,25 +41,25 @@ export const CORPUS_SEEDS: CorpusSeed[] = [
 	{
 		url: 'https://www8.cao.go.jp/space/plan/plan.html',
 		title: '内閣府 宇宙基本計画',
-		project: 'space-basic-plan',
+		project: 'artemis',
+		kind: 'official',
+	},
+	{
+		url: 'https://www8.cao.go.jp/space/budget/budget.html',
+		title: '内閣府 宇宙関係予算',
+		project: 'iss-kibo',
 		kind: 'official',
 	},
 	{
 		url: 'https://www.mext.go.jp/a_menu/kaihatu/space/',
 		title: '文部科学省 宇宙開発利用',
-		project: 'space-basic-plan',
+		project: 'artemis',
 		kind: 'official',
 	},
 	{
-		url: 'https://www.jaxa.jp/press/index_j.html',
-		title: 'JAXA プレスリリース一覧',
-		project: 'astronaut-selection',
-		kind: 'official',
-	},
-	{
-		url: 'https://global.jaxa.jp/projects/rockets/h3/',
-		title: 'JAXA H3',
-		project: 'h3',
+		url: 'https://humans-in-space.jaxa.jp/biz-lab/tech/pressurized-rover/',
+		title: 'JAXA 有人与圧ローバー',
+		project: 'pressurized-rover',
 		kind: 'official',
 	},
 ];
@@ -68,6 +68,6 @@ export const CORPUS_SEEDS: CorpusSeed[] = [
 export const NTRS_QUERIES = [
 	'International Space Station Japan Kibo',
 	'Artemis Gateway Japan',
-	'HTV H-II Transfer Vehicle',
-	'astronaut selection training',
+	'pressurized rover lunar surface Japan',
+	'commercial LEO destination post ISS',
 ];

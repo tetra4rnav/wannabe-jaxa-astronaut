@@ -12,6 +12,8 @@ interface Props {
 	docsId?: string;
 	skipMdAlternate?: boolean;
 	heading?: boolean;
+	/** Override sidebar nav (admin console). Defaults to docs nav. */
+	navGroups?: import('../lib/docs').NavGroup[];
 }
 
 const {
@@ -20,9 +22,11 @@ const {
 	docsId,
 	skipMdAlternate = false,
 	heading = true,
+	navGroups,
 } = Astro.props;
 
-const groups = await getSidebarNav();
+const groups = navGroups ?? (await getSidebarNav());
+const chromePath = `${Astro.url.pathname}${Astro.url.search}`;
 const site = (Astro.site?.origin ?? 'https://wannabe-jaxa-astronaut.diaphana.io').replace(/\/$/, '');
 const pageUrl = new URL(Astro.url.pathname, `${site}/`).href;
 const isHome = Astro.url.pathname === '/';
@@ -99,7 +103,7 @@ if (isHome) {
 		</script>
 	</head>
 	<body>
-		<SiteChrome client:load groups={groups} currentPath={Astro.url.pathname} />
+		<SiteChrome client:load groups={groups} currentPath={chromePath} />
 		<div class="flex min-h-svh flex-col bg-background pt-14 transition-[padding] md:pl-[var(--sidebar-current-width)]">
 			<main class="mx-auto w-full max-w-5xl flex-1 px-4 py-6 md:px-8">
 				{heading && <h1 class="mb-4 text-2xl font-semibold tracking-tight">{title}</h1>}

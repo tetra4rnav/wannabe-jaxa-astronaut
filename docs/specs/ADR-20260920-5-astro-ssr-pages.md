@@ -5,12 +5,12 @@
 
 ## Context
 
-Live news lives in KV (`STORE`). A static Pages build could only serve bundled `src/data/news.json` or a separate Pages Function for `/news.json`, so the HTML shell still depended on a client `fetch`. Homepages and filters needed the first paint to include current news without a second hop. `@astrojs/cloudflare` (Astro 7) emits a Worker entry plus `dist/client` assets, which is the supported path for bindings + SSR.
+Live news originally lived in KV (`STORE`). A static Pages build could only serve bundled `src/data/news.json` or a separate Pages Function for `/news.json`, so the HTML shell still depended on a client `fetch`. Homepages and filters needed the first paint to include current news without a second hop. `@astrojs/cloudflare` (Astro 7) emits a Worker entry plus `dist/client` assets, which is the supported path for bindings + SSR. Runtime feed SoT later moved to D1 ([ADR-20260923-1](./ADR-20260923-1-runtime-d1-sot.md)).
 
 ## Decision
 
 - Public site: **Astro `output: 'server'`** with `@astrojs/cloudflare`. Deploy with `wrangler deploy` (`main` → `dist/server/entry.mjs`, `assets.directory` → `dist/client`). Same project name / KV `STORE` / D1 `DB` / custom domain surface as before.
-- News routes (`/`, `/news/`, `/news.json`) read KV at request time (fallback: bundled `src/data/news.json`).
+- News routes (`/`, `/news/`, `/news.json`) read **D1 `news_items`** at request time (fallback: bundled `src/data/news.json` when D1 unbound / empty).
 - Wiki under `src/content/docs/` stays Git-canon and uses `prerender = true`.
 - Jobs remain on the separate Worker (`worker/wrangler.jsonc`). Do **not** merge jobs into the public Worker.
 - `/news.json` is an Astro endpoint only (no duplicate `functions/news.json.ts`).
@@ -18,7 +18,7 @@ Live news lives in KV (`STORE`). A static Pages build could only serve bundled `
 
 ## Consequences
 
-- Local/dev without KV still renders news from the repo JSON.
+- Local/dev without D1 still renders news from the repo JSON.
 - Remaining `functions/` handlers (`/news.md`, proposals, fact-checks, project timelines) stay until migrated to Astro routes; prefer not to add new Pages Functions for news.
 - Operator docs: [VER-20260920-1-operations.md](./VER-20260920-1-operations.md).
 
