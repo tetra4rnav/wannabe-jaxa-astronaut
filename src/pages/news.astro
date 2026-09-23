@@ -1,7 +1,10 @@
 ---
-import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import SiteLayout from '../layouts/SiteLayout.astro';
 import { NewsFeed } from '../components/NewsFeed';
 import SiteDisclaimer from '../components/SiteDisclaimer.astro';
+import { loadNewsFile } from '../lib/news-store';
+
+const news = await loadNewsFile();
 
 const regions = [
 	{ id: 'all', label: 'すべて' },
@@ -14,17 +17,12 @@ const regions = [
 ] as const;
 ---
 
-<StarlightPage
-	frontmatter={{
-		title: 'ニュース',
-		description: '各国公式フィードと公式Xの原語＋日本語対照一覧（機械翻訳あり）。',
-	}}
->
+<SiteLayout title="ニュース" description="各国公式ニュースの原語＋日本語対照" skipMdAlternate>
 	<SiteDisclaimer>
 		本サイトは宇宙機関の公式サイトではありません。タイトル・短文の日本語は機械翻訳の場合があります。
 	</SiteDisclaimer>
 
-	<form class="mb-6 flex flex-wrap gap-4" method="get">
+	<form class="news-filters mb-4 flex flex-wrap gap-4" method="get">
 		<label class="text-sm">
 			地域
 			<select
@@ -54,38 +52,38 @@ const regions = [
 	</form>
 
 	<div id="news-list">
-		<NewsFeed client:load showAll />
+		<NewsFeed client:load initialNews={news} showAll />
 	</div>
+</SiteLayout>
 
-	<script is:inline>
-		(function () {
-			const region = document.getElementById('region');
-			const kind = document.getElementById('kind');
-			const params = new URLSearchParams(location.search);
-			if (region && params.get('region')) region.value = params.get('region');
-			if (kind && params.get('kind')) kind.value = params.get('kind');
-			function apply() {
-				const r = region ? region.value : 'all';
-				const k = kind ? kind.value : 'all';
-				document.querySelectorAll('#news-list [data-region]').forEach(function (el) {
-					const okR = r === 'all' || el.getAttribute('data-region') === r;
-					const okK = k === 'all' || el.getAttribute('data-kind') === k;
-					el.hidden = !(okR && okK);
-				});
-				const qs = new URLSearchParams();
-				if (r !== 'all') qs.set('region', r);
-				if (k !== 'all') qs.set('kind', k);
-				const next = qs.toString();
-				history.replaceState(null, '', next ? '?' + next : location.pathname);
-			}
-			region && region.addEventListener('change', apply);
-			kind && kind.addEventListener('change', apply);
-			const list = document.getElementById('news-list');
-			if (list) {
-				const obs = new MutationObserver(apply);
-				obs.observe(list, { childList: true, subtree: true });
-			}
-			apply();
-		})();
-	</script>
-</StarlightPage>
+<script is:inline>
+	(function () {
+		const region = document.getElementById('region');
+		const kind = document.getElementById('kind');
+		const params = new URLSearchParams(location.search);
+		if (region && params.get('region')) region.value = params.get('region');
+		if (kind && params.get('kind')) kind.value = params.get('kind');
+		function apply() {
+			const r = region ? region.value : 'all';
+			const k = kind ? kind.value : 'all';
+			document.querySelectorAll('#news-list [data-region]').forEach(function (el) {
+				const okR = r === 'all' || el.getAttribute('data-region') === r;
+				const okK = k === 'all' || el.getAttribute('data-kind') === k;
+				el.hidden = !(okR && okK);
+			});
+			const qs = new URLSearchParams();
+			if (r !== 'all') qs.set('region', r);
+			if (k !== 'all') qs.set('kind', k);
+			const next = qs.toString();
+			history.replaceState(null, '', next ? '?' + next : location.pathname);
+		}
+		region && region.addEventListener('change', apply);
+		kind && kind.addEventListener('change', apply);
+		const list = document.getElementById('news-list');
+		if (list) {
+			const obs = new MutationObserver(apply);
+			obs.observe(list, { childList: true, subtree: true });
+		}
+		apply();
+	})();
+</script>

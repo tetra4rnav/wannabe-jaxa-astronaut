@@ -14,7 +14,7 @@ export interface ProjectConfig {
 	slug: ProjectSlug;
 	nameJa: string;
 	nameEn: string;
-	/** Optional Starlight docs id */
+	/** Optional wiki docs id */
 	wikiDocsId?: string;
 	startDate?: string;
 	endDate?: string | null;

@@ -5,28 +5,29 @@
 
 ## Context
 
-Need a static public wiki and separate scheduled AI / fetch work without mixing deploy surfaces.
+Need a public wiki with live news and separate scheduled AI / fetch work without mixing deploy surfaces.
 
 ## Decision
 
-- Public site: **Cloudflare Pages** + Astro Starlight (static).
-- Jobs: **Worker + Workflows** (FetchNews, tagging, ingest, ProposeWiki, FactCheck).
-- Do **not** migrate Pages to Workers Static Assets.
+- Public site: Astro SSR via `@astrojs/cloudflare` (Worker entry + static assets). Details: [ADR-20260920-5](./ADR-20260920-5-astro-ssr-pages.md). UI stack: [ADR-20260920-4](./ADR-20260920-4-astro-shadcn-ui.md).
+- Jobs: **Worker + Workflows** (FetchNews, tagging, ingest, ProposeWiki, FactCheck) in `worker/wrangler.jsonc` — separate from the public app Worker.
+- Do **not** merge the jobs Worker into the public app, and do **not** treat a static-only Workers Static Assets site as a substitute for the former Pages wiki without SSR.
 - **Workers paid plan** is required for cron / Workflows / AI / Vectorize.
 - Target bindings: KV (live news & fact-check JSON), D1 (projects, events, documents), R2 (chunks), Vectorize, Workers AI.
-- Root `wrangler.jsonc` stays Pages-only; jobs config intended at `worker/wrangler.jsonc`.
+- Root `wrangler.jsonc` configures the public Astro app (bindings + assets); jobs stay under `worker/wrangler.jsonc`.
 
 ## Consequences
 
 - GitHub Action schedules for news / fact-check moved to Worker Workflows; see [VER-20260920-1-operations.md](./VER-20260920-1-operations.md).
-- Local `npm run fetch:news` may still write `src/data/news.json` for development.
+- Local `npm run fetch:news` may still write `src/data/news.json` for development fallback when KV is empty.
 
 ## Alternatives considered
 
-- Workers Static Assets for the whole site — rejected; Pages Git deploy already works; jobs stay separate.
+- One Worker for both public UI and cron jobs — rejected; keep deploy and blast radius separate.
 - Keeping all schedules on GitHub Actions forever — rejected; product direction is Cloudflare-owned jobs.
 
 ## Related
 
 - [ADR-20260920-2-project-timeline-rag.md](./ADR-20260920-2-project-timeline-rag.md)
+- [ADR-20260920-5-astro-ssr-pages.md](./ADR-20260920-5-astro-ssr-pages.md)
 - [VER-20260920-1-operations.md](./VER-20260920-1-operations.md)

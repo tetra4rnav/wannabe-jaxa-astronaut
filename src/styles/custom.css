@@ -1,116 +1,103 @@
-:root {
-	--sl-color-accent-low: #0a1f3d;
-	--sl-color-accent: #3d7cff;
-	--sl-color-accent-high: #a8c7ff;
-	--sl-color-white: #f2f6ff;
-	--sl-color-gray-1: #e4ebf7;
-	--sl-color-gray-2: #c5d0e6;
-	--sl-color-gray-3: #8b9bb8;
-	--sl-color-gray-4: #4a5a78;
-	--sl-color-gray-5: #243147;
-	--sl-color-gray-6: #121a28;
-	--sl-color-black: #070b12;
-	--sl-color-bg-nav: #0a1220;
-	--sl-color-bg-sidebar: #0b1422;
-	--jaxa-disclaimer: #f0b429;
-}
-
-:root[data-theme='light'] {
-	--sl-color-accent-low: #d6e4ff;
-	--sl-color-accent: #1a56c9;
-	--sl-color-accent-high: #0b2f6b;
-	--sl-color-bg-nav: #f5f8ff;
-	--sl-color-bg-sidebar: #eef3fb;
-}
-
 .site-disclaimer {
 	border-inline-start: 3px solid var(--jaxa-disclaimer);
-	padding: 0.6rem 0.9rem;
-	margin: 0 0 1.25rem;
-	background: color-mix(in oklab, var(--jaxa-disclaimer) 12%, transparent);
-	font-size: 0.9rem;
 }
 
-.folder-grid {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
-	gap: 1rem;
-	margin: 1.5rem 0;
+.wiki-prose {
+	max-width: 48rem;
 }
 
-.folder-grid a {
-	display: block;
-	padding: 1rem 1.1rem;
-	border: 1px solid var(--sl-color-gray-5);
-	border-radius: 0.4rem;
-	text-decoration: none;
-	color: inherit;
-	transition: border-color 0.2s ease, transform 0.2s ease;
+.wiki-prose :where(h1, h2, h3, h4) {
+	scroll-margin-top: 5rem;
+	font-weight: 650;
+	line-height: 1.25;
 }
 
-.folder-grid a:hover {
-	border-color: var(--sl-color-accent);
-	transform: translateY(-2px);
+.wiki-prose h1 {
+	font-size: 1.75rem;
+	margin: 0 0 1rem;
 }
 
-.news-pair {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 1rem;
-	margin: 0.75rem 0 1.25rem;
+.wiki-prose h2 {
+	font-size: 1.25rem;
+	margin: 2rem 0 0.75rem;
 }
 
-@media (max-width: 48rem) {
-	.news-pair {
-		grid-template-columns: 1fr;
-	}
-}
-
-.news-col {
-	border: 1px solid var(--sl-color-gray-5);
-	border-radius: 0.35rem;
-	padding: 0.75rem 0.9rem;
-}
-
-.news-col .label {
-	font-size: 0.75rem;
-	opacity: 0.75;
-	margin-bottom: 0.35rem;
-}
-
-.news-meta {
-	font-size: 0.85rem;
-	opacity: 0.8;
-	margin-bottom: 0.35rem;
-}
-
-.fact-check {
-	margin-top: 2.5rem;
-	padding-top: 1rem;
-	border-top: 1px solid var(--sl-color-gray-5);
-}
-
-.fact-check h2 {
+.wiki-prose h3 {
 	font-size: 1.1rem;
+	margin: 1.5rem 0 0.5rem;
 }
 
-.fact-check ul {
-	padding-inline-start: 1.1rem;
+.wiki-prose p,
+.wiki-prose ul,
+.wiki-prose ol,
+.wiki-prose table,
+.wiki-prose pre,
+.wiki-prose blockquote {
+	margin: 0.85rem 0;
+}
+
+.wiki-prose a {
+	color: var(--primary);
+	text-underline-offset: 3px;
+}
+
+.wiki-prose a:hover {
+	text-decoration: underline;
+}
+
+.wiki-prose ul,
+.wiki-prose ol {
+	padding-inline-start: 1.25rem;
+}
+
+.wiki-prose code {
+	font-size: 0.9em;
+	background: var(--muted);
+	border-radius: 0.3rem;
+	padding: 0.1em 0.35em;
+}
+
+.wiki-prose pre {
+	overflow-x: auto;
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	padding: 0.9rem 1rem;
+	background: var(--muted);
+}
+
+.wiki-prose pre code {
+	background: transparent;
+	padding: 0;
+}
+
+.wiki-prose table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.95rem;
+}
+
+.wiki-prose th,
+.wiki-prose td {
+	border: 1px solid var(--border);
+	padding: 0.45rem 0.6rem;
+	text-align: start;
+}
+
+.wiki-prose blockquote {
+	border-inline-start: 3px solid var(--border);
+	padding-inline-start: 0.9rem;
+	color: var(--muted-foreground);
 }
 
 .news-filters {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 0.5rem 1rem;
-	margin: 1rem 0 1.5rem;
+	gap: 0.75rem 1.25rem;
+	margin: 0 0 1.5rem;
 	align-items: center;
-}
-
-.news-filters label {
-	font-size: 0.9rem;
 }
 
 .mt-hint {
 	font-size: 0.85rem;
-	opacity: 0.8;
+	color: var(--muted-foreground);
 }

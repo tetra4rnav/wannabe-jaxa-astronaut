@@ -1,0 +1,59 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import { NewsFeed } from '../components/NewsFeed';
+import SiteDisclaimer from '../components/SiteDisclaimer.astro';
+import {
+	Card,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from '../components/ui/card';
+import { getWikiThemes } from '../lib/docs';
+import { loadNewsFile } from '../lib/news-store';
+import { SITE_DESCRIPTION, SITE_TITLE } from '../lib/site';
+
+const news = await loadNewsFile();
+const themes = await getWikiThemes();
+const HOME_NEWS_LIMIT = 5;
+---
+
+<SiteLayout title={SITE_TITLE} description={SITE_DESCRIPTION} docsId="index" heading={false}>
+	<SiteDisclaimer>
+		本サイトは宇宙機関の公式サイトではありません。タイトル・短文の日本語は機械翻訳の場合があります。
+	</SiteDisclaimer>
+
+	<section class="mb-10">
+		<div class="mb-4 flex flex-wrap items-end justify-between gap-2">
+			<h2 class="text-xl font-semibold tracking-tight">ニュース</h2>
+			<a href="/news/" class="text-sm text-primary underline-offset-4 hover:underline">
+				すべてのニュース
+			</a>
+		</div>
+		<NewsFeed client:load initialNews={news} limit={HOME_NEWS_LIMIT} showMeta={false} />
+	</section>
+
+	<section>
+		<h2 class="mb-4 text-xl font-semibold tracking-tight">Wiki</h2>
+		<p class="mb-4 text-sm text-muted-foreground">主なテーマ</p>
+		{
+			themes.length === 0 ? (
+				<p class="text-sm text-muted-foreground">テーマがまだありません。</p>
+			) : (
+				<div class="grid gap-4 sm:grid-cols-2">
+					{themes.map((theme) => (
+						<a href={theme.href} class="block no-underline">
+							<Card className="h-full transition-colors hover:bg-muted/40">
+								<CardHeader>
+									<CardTitle>{theme.title}</CardTitle>
+									{theme.description ? (
+										<CardDescription>{theme.description}</CardDescription>
+									) : null}
+								</CardHeader>
+							</Card>
+						</a>
+					))}
+				</div>
+			)
+		}
+	</section>
+</SiteLayout>

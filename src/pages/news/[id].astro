@@ -1,0 +1,31 @@
+---
+import SiteLayout from '../../layouts/SiteLayout.astro';
+import SiteDisclaimer from '../../components/SiteDisclaimer.astro';
+import { NewsDetail } from '../../components/NewsDetail';
+import { loadNewsFile } from '../../lib/news-store';
+
+const { id } = Astro.params;
+if (!id) {
+	return new Response(null, { status: 404, statusText: 'Not Found' });
+}
+
+const news = await loadNewsFile();
+const item = news.items.find((i) => i.id === id);
+if (!item) {
+	return new Response(null, { status: 404, statusText: 'Not Found' });
+}
+
+const title = item.titleJa || item.titleOriginal || 'ニュース';
+---
+
+<SiteLayout title={title} description={item.summaryJa || item.summaryOriginal || undefined} skipMdAlternate>
+	<SiteDisclaimer>
+		本サイトは宇宙機関の公式サイトではありません。タイトル・短文の日本語は機械翻訳の場合があります。
+	</SiteDisclaimer>
+
+	<p class="mb-4 text-sm text-muted-foreground">
+		<a href="/news/">← ニュース一覧</a>
+	</p>
+
+	<NewsDetail item={item} />
+</SiteLayout>

@@ -1,8 +1,10 @@
 ---
-import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import SiteLayout from '../../layouts/SiteLayout.astro';
 import { PROJECT_BY_SLUG, listCatalogProjects } from '../../config/projects';
 import { ProjectTimeline } from '../../components/ProjectTimeline';
 import SiteDisclaimer from '../../components/SiteDisclaimer.astro';
+
+export const prerender = true;
 
 export function getStaticPaths() {
 	return listCatalogProjects().map((p) => ({ params: { slug: p.slug } }));
@@ -12,13 +14,12 @@ const { slug } = Astro.params;
 const project = slug ? PROJECT_BY_SLUG[slug] : undefined;
 ---
 
-<StarlightPage
-	frontmatter={{
-		title: project?.nameJa ?? 'プロジェクト',
-		description: project
-			? `${project.nameEn} の公式経緯とニュースの時系列`
-			: 'プロジェクト時系列',
-	}}
+<SiteLayout
+	title={project?.nameJa ?? 'プロジェクト'}
+	description={
+		project ? `${project.nameEn} の公式経緯とニュースの時系列` : 'プロジェクト時系列'
+	}
+	skipMdAlternate
 >
 	<SiteDisclaimer>
 		公式マイルストーンとニュースを混在表示します。Wiki 本文はこのページでは書き換えません。
@@ -48,4 +49,4 @@ const project = slug ? PROJECT_BY_SLUG[slug] : undefined;
 	<p class="mt-6">
 		<a href="/projects/">← プロジェクト一覧</a>
 	</p>
-</StarlightPage>
+</SiteLayout>

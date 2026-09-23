@@ -1,0 +1,10 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+
+export const prerender = true;
+---
+
+<SiteLayout title="ページが見つかりません" skipMdAlternate>
+	<p class="text-muted-foreground">指定の URL はありません。</p>
+	<p class="mt-4"><a href="/">トップへ戻る</a></p>
+</SiteLayout>

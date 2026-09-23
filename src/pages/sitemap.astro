@@ -1,22 +1,24 @@
 ---
-import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import SiteLayout from '../layouts/SiteLayout.astro';
 import { getCollection } from 'astro:content';
+import { docIdToSlug, isExcludedWiki, slugToHref, slugToMdHref } from '../lib/docs';
 
-const docs = (await getCollection('docs')).filter((d) => !d.id.includes('_template'));
+export const prerender = true;
+
+const docs = (await getCollection('docs')).filter((d) => !isExcludedWiki(d.id, d.data.draft));
 
 function hrefFor(id: string): string {
-	if (id === 'index') return '/';
-	return `/${id}/`;
+	return slugToHref(docIdToSlug(id));
 }
 
 function mdFor(id: string): string {
-	if (id === 'index') return '/index.md';
-	return `/${id}.md`;
+	return slugToMdHref(docIdToSlug(id));
 }
 
 const byFolder = new Map<string, typeof docs>();
 for (const doc of docs) {
-	const folder = doc.id.includes('/') ? doc.id.split('/')[0]! : '_root';
+	const slug = docIdToSlug(doc.id);
+	const folder = slug.includes('/') ? slug.split('/')[0]! : '_root';
 	const list = byFolder.get(folder) ?? [];
 	list.push(doc);
 	byFolder.set(folder, list);
@@ -25,22 +27,21 @@ for (const doc of docs) {
 const folderOrder = ['_root', ...[...byFolder.keys()].filter((k) => k !== '_root').sort()];
 ---
 
-<StarlightPage
-	frontmatter={{
-		title: 'サイトマップ',
-		description: 'Wiki・ニュース・機械可読ミラーへの静的リンク一覧。',
-	}}
+<SiteLayout
+	title="サイトマップ"
+	description="Wiki・ニュース・機械可読ミラーへの静的リンク一覧。"
+	skipMdAlternate
 >
-	<aside class="site-disclaimer" role="note">
+	<aside class="site-disclaimer mb-4 rounded-lg border border-border bg-muted/40 px-4 py-3 text-sm" role="note">
 		<strong>非公式:</strong> 本サイトは JAXA・宇宙機関の公式サイトではありません。クロール用の HTML
 		ハブです。
 	</aside>
 
-	<section>
-		<h2>主要ページ</h2>
-		<ul>
-			<li><a href="/">ホーム</a> · <a href="/index.md">index.md</a></li>
-			<li><a href="/news/">ニュース</a> · <a href="/news.md">news.md</a> · <a href="/news.json">news.json</a></li>
+	<section class="mb-8">
+		<h2 class="mb-2 text-lg font-medium">主要ページ</h2>
+		<ul class="list-disc space-y-1 ps-5">
+			<li><a href="/">ホーム（ニュース）</a> · <a href="/index.md">index.md</a></li>
+			<li><a href="/">ニュース</a> · <a href="/news.md">news.md</a> · <a href="/news.json">news.json</a></li>
 			<li><a href="/projects/">プロジェクト時系列</a> · <a href="/projects/catalog.json">catalog.json</a></li>
 			<li><a href="/proposals/">Wiki 構築提案</a> · <a href="/proposals.json">proposals.json</a></li>
 			<li><a href="/about/">このサイトについて</a> · <a href="/about.md">about.md</a></li>
@@ -48,16 +49,16 @@ const folderOrder = ['_root', ...[...byFolder.keys()].filter((k) => k !== '_root
 		</ul>
 	</section>
 
-	<section>
-		<h2>Wiki</h2>
+	<section class="mb-8">
+		<h2 class="mb-2 text-lg font-medium">Wiki</h2>
 		{
 			folderOrder.map((folder) => {
 				const pages = (byFolder.get(folder) ?? []).sort((a, b) => a.id.localeCompare(b.id));
 				const label = folder === '_root' ? 'ルート' : folder;
 				return (
-					<div>
-						<h3>{label}</h3>
-						<ul>
+					<div class="mb-4">
+						<h3 class="mb-1 font-medium">{label}</h3>
+						<ul class="list-disc space-y-1 ps-5">
 							{pages.map((doc) => (
 								<li>
 									<a href={hrefFor(doc.id)}>{doc.data.title}</a>
@@ -73,8 +74,8 @@ const folderOrder = ['_root', ...[...byFolder.keys()].filter((k) => k !== '_root
 	</section>
 
 	<section>
-		<h2>機械可読ミラー</h2>
-		<ul>
+		<h2 class="mb-2 text-lg font-medium">機械可読ミラー</h2>
+		<ul class="list-disc space-y-1 ps-5">
 			<li><a href="/llms.txt">/llms.txt</a></li>
 			<li><a href="/llms-full.txt">/llms-full.txt</a></li>
 			<li><a href="/llms-small.txt">/llms-small.txt</a></li>
@@ -88,4 +89,4 @@ const folderOrder = ['_root', ...[...byFolder.keys()].filter((k) => k !== '_root
 			<li><a href="/robots.txt">/robots.txt</a></li>
 		</ul>
 	</section>
-</StarlightPage>
+</SiteLayout>

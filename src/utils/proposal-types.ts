@@ -8,7 +8,7 @@ export type WikiProposal = {
 	newsTitle: string;
 	projectSlugs: string[];
 	action: WikiProposalAction;
-	/** Existing Starlight docs id, or proposed path for create */
+	/** Existing wiki docs id, or proposed path for create */
 	targetDocsId: string | null;
 	proposedTitle: string;
 	headings: string[];

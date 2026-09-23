@@ -1,6 +1,6 @@
 # Developer docs
 
-English domain model and numbered specs for [wannabe-jaxa-astronaut](https://github.com/tetra4rnav/wannabe-jaxa-astronaut). This folder is **not** the Starlight wiki (`src/content/docs/`).
+English domain model and numbered specs for [wannabe-jaxa-astronaut](https://github.com/tetra4rnav/wannabe-jaxa-astronaut). This folder is **not** the visitor wiki (`src/content/docs/`).
 
 | Audience | Where |
 | --- | --- |
@@ -26,6 +26,7 @@ Filename: `{REQ|ADR|VER}-{YYYYMMDD}-{N}-{slug}.md`. Templates: [`specs/_template
 | [ADR-20260920-1](./specs/ADR-20260920-1-pages-and-worker.md) | Pages and Worker |
 | [ADR-20260920-2](./specs/ADR-20260920-2-project-timeline-rag.md) | Project-timeline RAG |
 | [ADR-20260920-3](./specs/ADR-20260920-3-source-policy.md) | Source policy (lists in `src/config/`) |
+| [ADR-20260920-4](./specs/ADR-20260920-4-astro-shadcn-ui.md) | Astro + shadcn UI |
 | [VER-20260920-1](./specs/VER-20260920-1-operations.md) | Operations runbook |
 
 **REQ** = behavior. **ADR** = architecture decision. **VER** = verification / operations.
