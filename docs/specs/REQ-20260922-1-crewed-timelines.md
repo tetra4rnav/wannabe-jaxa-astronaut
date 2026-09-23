@@ -18,7 +18,7 @@ Visitors need an unofficial site that places current and planned national and co
 
 ## Out of scope
 
-- Ontology / catalog admin UI (tracked under [#11](https://github.com/tetra4rnav/wannabe-jaxa-astronaut/issues/11); Graph RAG walk is [REQ-20260922-2](./REQ-20260922-2-graph-rag.md))
+- Ontology / catalog admin UI and D1 runtime SoT ([REQ-20260923-1](./REQ-20260923-1-admin-runtime-sot.md), specs [#11](https://github.com/tetra4rnav/wannabe-jaxa-astronaut/issues/11), impl [#12](https://github.com/tetra4rnav/wannabe-jaxa-astronaut/issues/12); Graph RAG walk is [REQ-20260922-2](./REQ-20260922-2-graph-rag.md))
 - Public in-site chat over the corpus
 - Automatic wiki generation or rewrite
 - Bulk PDF full-text extraction

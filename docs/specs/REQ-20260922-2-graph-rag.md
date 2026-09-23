@@ -17,7 +17,7 @@ Crewed timelines already store typed catalog relations and retrieve same-project
 
 ## Out of scope
 
-- Ontology / catalog admin UI ([issue #11](https://github.com/tetra4rnav/wannabe-jaxa-astronaut/issues/11))
+- Ontology / catalog admin UI and D1 runtime cutover ([REQ-20260923-1](./REQ-20260923-1-admin-runtime-sot.md), [#11](https://github.com/tetra4rnav/wannabe-jaxa-astronaut/issues/11), [#12](https://github.com/tetra4rnav/wannabe-jaxa-astronaut/issues/12))
 - Agency / Vehicle / Budget as first-class catalog nodes
 - maxHops ≥ 2, edge weights, OWL reasoners
 - Public chat over the corpus

@@ -18,7 +18,7 @@ Retrieval was same-project only ([ADR-20260920-2](./ADR-20260920-2-project-timel
 | **Agency / Vehicle / Budget line** | **Not** first-class nodes (classification explosion; budget text already attaches to the nearest seed) |
 | **`countries` / `kindJa`** | **Planned display-only** Site table fields — not graph nodes, not Vectorize keys, not expand inputs (must not enter RAG) |
 
-No OWL, no reasoner, no ontology admin UI in this decision. Future first-class overlays (if any) keep chunk ownership on Project and land under issue [#11](https://github.com/tetra4rnav/wannabe-jaxa-astronaut/issues/11).
+No OWL, no reasoner in this decision. Catalog admin and D1 runtime SoT are [ADR-20260923-1](./ADR-20260923-1-runtime-d1-sot.md) ([#11](https://github.com/tetra4rnav/wannabe-jaxa-astronaut/issues/11) / [#12](https://github.com/tetra4rnav/wannabe-jaxa-astronaut/issues/12)). Future first-class overlays (if any) keep chunk ownership on Project.
 
 ### Retrieval walk (`expandRetrievalSlugs`)
 
@@ -47,7 +47,7 @@ Ingest, classify prompts, and Vectorize schema stay unchanged. Same-project matc
 
 ## Alternatives considered
 
-- Agency / Vehicle / Budget as graph nodes — rejected for now; revisit only with a separate ADR and admin track (#11).
+- Agency / Vehicle / Budget as graph nodes — rejected for now; revisit only with a separate ADR (admin track [#11](https://github.com/tetra4rnav/wannabe-jaxa-astronaut/issues/11) / [#12](https://github.com/tetra4rnav/wannabe-jaxa-astronaut/issues/12) does not make them first-class).
 - maxHops ≥ 2 or learned edge weights — deferred; noise risk.
 - Symmetric walk of all relation types — rejected; would flood parents with every child and flood ISS with every commercial LEO successor.
 
@@ -56,5 +56,6 @@ Ingest, classify prompts, and Vectorize schema stay unchanged. Same-project matc
 - [REQ-20260922-2-graph-rag.md](./REQ-20260922-2-graph-rag.md)
 - [ADR-20260922-2-crewed-project-relations.md](./ADR-20260922-2-crewed-project-relations.md)
 - [ADR-20260920-2-project-timeline-rag.md](./ADR-20260920-2-project-timeline-rag.md)
+- [ADR-20260923-1-runtime-d1-sot.md](./ADR-20260923-1-runtime-d1-sot.md)
 - [DOMAIN.md](../DOMAIN.md)
 - [GLOSSARY.md](../GLOSSARY.md)

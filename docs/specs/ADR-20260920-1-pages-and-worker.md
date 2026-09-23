@@ -13,7 +13,7 @@ Need a public wiki with live news and separate scheduled AI / fetch work without
 - Jobs: **Worker + Workflows** (FetchNews, tagging, ingest, ProposeWiki, FactCheck) in `worker/wrangler.jsonc` — separate from the public app Worker.
 - Do **not** merge the jobs Worker into the public app, and do **not** treat a static-only Workers Static Assets site as a substitute for the former Pages wiki without SSR.
 - **Workers paid plan** is required for cron / Workflows / AI / Vectorize.
-- Target bindings: KV (live news & fact-check JSON), D1 (projects, events, documents), R2 (chunks), Vectorize, Workers AI.
+- Target bindings: KV (transitional news / fact-check / proposals JSON until D1 cutover), D1 (projects, relations, news feed, proposals, documents, events), R2 (chunks), Vectorize, Workers AI. Runtime SoT for catalog + news feed + proposals: [ADR-20260923-1](./ADR-20260923-1-runtime-d1-sot.md).
 - Root `wrangler.jsonc` configures the public Astro app (bindings + assets); jobs stay under `worker/wrangler.jsonc`.
 
 ## Consequences
@@ -28,6 +28,7 @@ Need a public wiki with live news and separate scheduled AI / fetch work without
 
 ## Related
 
+- [ADR-20260923-1-runtime-d1-sot.md](./ADR-20260923-1-runtime-d1-sot.md)
 - [ADR-20260920-2-project-timeline-rag.md](./ADR-20260920-2-project-timeline-rag.md)
 - [ADR-20260920-5-astro-ssr-pages.md](./ADR-20260920-5-astro-ssr-pages.md)
 - [VER-20260920-1-operations.md](./VER-20260920-1-operations.md)

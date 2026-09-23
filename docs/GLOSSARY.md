@@ -22,5 +22,7 @@ Use these terms in code comments, specs, commits, and UI copy. Prefer the Englis
 | **Unassigned** | 未分類 | News that could not be tagged to an in-scope project. |
 | **Ingest gate** | 取り込みゲート | LLM decision that news is news-like and trustworthy enough for RAG evidence. |
 | **countries / kindJa** | 国 / 種別（表示用） | Site-only catalog display fields. Not graph nodes; must not enter RAG. |
+| **Runtime SoT** | 実行時の正 | D1 for catalog, news feed, and proposals ([ADR-20260923-1](./specs/ADR-20260923-1-runtime-d1-sot.md)); TypeScript / KV are seed or migration fallback. |
+| **Admin** | 管理画面 | Cloudflare Access–protected `/admin` for catalog CRUD (impl [#12](https://github.com/tetra4rnav/wannabe-jaxa-astronaut/issues/12)). |
 
 Do not use “article brief” for LLM news essays—the product has **proposals**, not auto-written news articles. Agency, vehicle, and budget line are not catalog entity types.

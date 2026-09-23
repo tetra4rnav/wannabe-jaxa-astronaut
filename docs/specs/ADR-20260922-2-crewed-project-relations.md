@@ -26,7 +26,7 @@ Company, vehicle, or station splits happen only when the same class of official 
 
 ### Relations (config)
 
-Typed edges on [`src/config/projects.ts`](../../src/config/projects.ts): `partner`, `depends_on`, `successor`. Displayed in UI. Retrieval walks these edges via [ADR-20260922-3](./ADR-20260922-3-graph-rag.md) (`expandRetrievalSlugs`); this ADR owns membership and edge types only.
+Typed edges `partner`, `depends_on`, `successor`. Membership and edge **types** are owned here. Runtime storage moves to D1 under [ADR-20260923-1](./ADR-20260923-1-runtime-d1-sot.md) (TypeScript remains seed / fallback). Displayed in UI. Retrieval walks these edges via [ADR-20260922-3](./ADR-20260922-3-graph-rag.md) (`expandRetrievalSlugs`).
 
 ### Knowledge base
 
@@ -34,13 +34,13 @@ R2 chunks + Vectorize remain the corpus ([ADR-20260920-2](./ADR-20260920-2-proje
 
 ### Vocabulary now vs later
 
-- **Now:** Project, phase (`ongoing` / `planned`), role (`seed` / `related` / `retired`), relation types, event kinds; Graph RAG 1-hop expand ([ADR-20260922-3](./ADR-20260922-3-graph-rag.md)).
-- **Not first-class:** Agency, vehicle, budget line; planned display-only `countries` / `kindJa` (Site only).
-- **Later (issue #11):** Ontology / catalog admin UI; any reconsideration of first-class overlays.
+- **Now:** Project, phase (`ongoing` / `planned`), role (`seed` / `related` / `retired`), relation types, event kinds; Graph RAG 1-hop expand ([ADR-20260922-3](./ADR-20260922-3-graph-rag.md)); display-only `countries` / `kindJa`.
+- **Not first-class:** Agency, vehicle, budget line.
+- **Admin / D1 SoT:** [ADR-20260923-1](./ADR-20260923-1-runtime-d1-sot.md), [REQ-20260923-1](./REQ-20260923-1-admin-runtime-sot.md); impl [#12](https://github.com/tetra4rnav/wannabe-jaxa-astronaut/issues/12). Specs [#11](https://github.com/tetra4rnav/wannabe-jaxa-astronaut/issues/11).
 
 ### Ontology tooling
 
-No admin UI, OWL, or reasoner in this branch (tracked under issue #11).
+No OWL or reasoner. Catalog admin UI is specified in [ADR-20260923-1](./ADR-20260923-1-runtime-d1-sot.md) / [REQ-20260923-1](./REQ-20260923-1-admin-runtime-sot.md) and implemented in [#12](https://github.com/tetra4rnav/wannabe-jaxa-astronaut/issues/12).
 
 ## Consequences
 
@@ -59,5 +59,6 @@ No admin UI, OWL, or reasoner in this branch (tracked under issue #11).
 - [REQ-20260922-1-crewed-timelines.md](./REQ-20260922-1-crewed-timelines.md)
 - [ADR-20260922-3-graph-rag.md](./ADR-20260922-3-graph-rag.md)
 - [REQ-20260922-2-graph-rag.md](./REQ-20260922-2-graph-rag.md)
+- [ADR-20260923-1-runtime-d1-sot.md](./ADR-20260923-1-runtime-d1-sot.md)
 - [DOMAIN.md](../DOMAIN.md)
 - [GLOSSARY.md](../GLOSSARY.md)
