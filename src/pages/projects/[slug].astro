@@ -1,22 +1,27 @@
 ---
 import SiteLayout from '../../layouts/SiteLayout.astro';
 import {
-	PROJECT_BY_SLUG,
 	countryFlag,
-	listProjectPages,
 	phaseLabelJa,
 	relationLabelJa,
+	type ProjectConfig,
 } from '../../config/projects';
 import { ProjectTimeline } from '../../components/ProjectTimeline';
+import { loadCatalog, projectBySlugFrom } from '../../../shared/timeline/catalog';
 
-export const prerender = true;
-
-export function getStaticPaths() {
-	return listProjectPages().map((p) => ({ params: { slug: p.slug } }));
-}
+export const prerender = false;
 
 const { slug } = Astro.params;
-const project = slug ? PROJECT_BY_SLUG[slug] : undefined;
+
+let catalog: ProjectConfig[] = await loadCatalog(null);
+try {
+	const { env } = await import('cloudflare:workers');
+	catalog = await loadCatalog(env.DB);
+} catch {
+	/* local */
+}
+const bySlug = projectBySlugFrom(catalog);
+const project = slug ? bySlug[slug] : undefined;
 const flags =
 	project?.countries && project.countries.length > 0
 		? project.countries.map((c) => countryFlag(c)).join('')
@@ -55,14 +60,13 @@ const flags =
 							? ' · 関係先'
 							: project.role === 'retired'
 								? ' · 引退'
-								: ''}
-					{' '}
+								: ''}{' '}
 					· <a href={`/projects/${project.slug}/timeline.json`}>timeline.json</a>
 				</p>
 				{project.relations && project.relations.length > 0 ? (
-					<ul class="mb-4 space-y-1 text-sm">
+					<ul class="mb-6 space-y-0.5 text-sm text-muted-foreground">
 						{project.relations.map((r) => {
-							const target = PROJECT_BY_SLUG[r.target];
+							const target = bySlug[r.target];
 							return (
 								<li>
 									{relationLabelJa(r.type)} →{' '}
@@ -72,14 +76,10 @@ const flags =
 						})}
 					</ul>
 				) : null}
-				<ProjectTimeline client:load slug={project.slug} />
+				<ProjectTimeline client:load projectSlug={project.slug} />
 			</>
 		) : (
-			<p>不明なプロジェクトです。</p>
+			<p class="text-sm text-muted-foreground">プロジェクトが見つかりません。</p>
 		)
 	}
-
-	<p class="mt-6">
-		<a href="/projects/">← プロジェクト一覧</a>
-	</p>
 </SiteLayout>

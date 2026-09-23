@@ -3,6 +3,7 @@
 type RuntimeEnv = {
 	STORE?: KVNamespace;
 	DB?: D1Database;
+	ADMIN_OPEN?: string;
 };
 
 declare namespace Cloudflare {

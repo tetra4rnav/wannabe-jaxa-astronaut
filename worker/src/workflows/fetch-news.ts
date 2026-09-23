@@ -4,40 +4,17 @@ import {
 	type WorkflowStep,
 } from 'cloudflare:workers';
 import type { NewsFile, NewsItem } from '../../../src/utils/news-types.ts';
-import {
-	NEWS_KV_KEY,
-	NEWS_MD_KV_KEY,
-	newsFileToMarkdown,
-} from '../../../shared/news/format.ts';
+import { newsFileToMarkdown } from '../../../shared/news/format.ts';
 import { emptyNewsFile, runFetchNews } from '../../../shared/news/run-fetch-news.ts';
+import { loadNewsFromD1, replaceNewsInD1 } from '../../../shared/news/d1-store.ts';
 import type { NewsSecrets } from '../../../shared/news/secrets.ts';
-import { syncProjectsTable, upsertEvent } from '../../../shared/timeline/db.ts';
+import { ensureCatalogSeeded, loadCatalog } from '../../../shared/timeline/catalog.ts';
+import { upsertEvent } from '../../../shared/timeline/db.ts';
 import { ingestApprovedNews } from '../../../shared/timeline/ingest-news.ts';
 import { llmClassifyNewsItem } from '../../../shared/timeline/llm-classify-news.ts';
 import type { Env } from '../env.ts';
 
-const GITHUB_NEWS_FALLBACK =
-	'https://raw.githubusercontent.com/tetra4rnav/wannabe-jaxa-astronaut/main/src/data/news.json';
-
 const CLASSIFY_BATCH = 8;
-
-async function loadExisting(store: KVNamespace): Promise<NewsFile> {
-	const raw = await store.get(NEWS_KV_KEY);
-	if (raw) {
-		try {
-			return JSON.parse(raw) as NewsFile;
-		} catch {
-			/* fall through */
-		}
-	}
-	try {
-		const res = await fetch(GITHUB_NEWS_FALLBACK);
-		if (res.ok) return (await res.json()) as NewsFile;
-	} catch {
-		/* ignore */
-	}
-	return emptyNewsFile();
-}
 
 function secretsFromEnv(env: Env): NewsSecrets {
 	return {
@@ -52,12 +29,20 @@ function needsLlmClassify(item: NewsItem): boolean {
 
 export class FetchNewsWorkflow extends WorkflowEntrypoint<Env> {
 	async run(_event: WorkflowEvent<unknown>, step: WorkflowStep) {
-		await step.do('sync projects', async () => {
-			await syncProjectsTable(this.env.DB);
+		await step.do('ensure catalog seeded', async () => {
+			await ensureCatalogSeeded(this.env.DB);
 		});
 
+		const catalog = await step.do('load catalog', async () => loadCatalog(this.env.DB));
+
 		const existing = await step.do('load existing news', async () => {
-			return loadExisting(this.env.STORE);
+			try {
+				const fromD1 = await loadNewsFromD1(this.env.DB);
+				if (fromD1.items.length) return fromD1;
+			} catch {
+				/* table may be empty before migrate */
+			}
+			return emptyNewsFile();
 		});
 
 		const merged = await step.do(
@@ -82,7 +67,7 @@ export class FetchNewsWorkflow extends WorkflowEntrypoint<Env> {
 					}
 				> = {};
 				for (const item of pending) {
-					out[item.id] = await llmClassifyNewsItem(this.env, item);
+					out[item.id] = await llmClassifyNewsItem(this.env, item, catalog);
 				}
 				return out;
 			},
@@ -124,7 +109,7 @@ export class FetchNewsWorkflow extends WorkflowEntrypoint<Env> {
 			let n = 0;
 			for (const item of tagged.items) {
 				if (!item.ingestAsSource || !item.llmClassifiedAt) continue;
-				if (!classifiedMap[item.id]) continue; // only newly classified this run
+				if (!classifiedMap[item.id]) continue;
 				const result = await ingestApprovedNews(this.env, {
 					id: item.id,
 					url: item.url,
@@ -141,9 +126,10 @@ export class FetchNewsWorkflow extends WorkflowEntrypoint<Env> {
 			return n;
 		});
 
-		await step.do('write kv', async () => {
-			await this.env.STORE.put(NEWS_KV_KEY, JSON.stringify(tagged));
-			await this.env.STORE.put(NEWS_MD_KV_KEY, newsFileToMarkdown(tagged));
+		await step.do('write news d1', async () => {
+			await replaceNewsInD1(this.env.DB, tagged);
+			// keep md generation available for debugging without KV
+			void newsFileToMarkdown(tagged);
 			return { count: tagged.items.length, updatedAt: tagged.updatedAt };
 		});
 

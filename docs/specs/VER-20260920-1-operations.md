@@ -54,9 +54,9 @@ Source-domain audit runs on every local / CI build via `prebuild`. Scheduled new
 
 Do **not** enable Bot Fight Mode or AI crawler blocking; [`public/robots.txt`](../../public/robots.txt) is allow-all.
 
-Remaining Pages Functions under `functions/` may still serve `/news.md`, `/fact-checks/:id.json`, `/proposals.json` (plus `/proposals/:id.json`), and project timeline JSON when that surface is active. **`/news.json` is served by the Astro SSR app** (KV with bundled `src/data/news.json` fallback). Home (`/`), `/news/`, and `/news/[id]/` render news on the server from the same loader.
+Remaining Pages Functions under `functions/` may still serve `/news.md`, `/fact-checks/:id.json`, `/proposals.json` (plus `/proposals/:id.json`), and project timeline JSON when that surface is active. **`/news.json` is served by the Astro SSR app** (D1 `news_items`, with bundled `src/data/news.json` when D1 is unbound / empty). Home (`/`), `/news/`, and `/news/[id]/` render news on the server from the same loader.
 
-Bind on the public app: KV `STORE` → `wannabe-jaxa-store`, D1 `DB` → `wannabe-jaxa-db`.
+Bind on the public app: KV `STORE` → `wannabe-jaxa-store` (fact-check), D1 `DB` → `wannabe-jaxa-db` (catalog + news + proposals + timeline). After KV→D1 cutover, delete obsolete `news:*` / `proposals:file` keys ([VER-20260923-1](./VER-20260923-1-admin-and-d1.md)).
 
 ### Jobs Worker
 

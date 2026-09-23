@@ -1,7 +1,11 @@
 import type { NewsItem } from '../../src/utils/news-types.ts';
-import type { ProjectSlug } from '../../src/config/projects.ts';
+import type { ProjectConfig, ProjectSlug } from '../../src/config/projects.ts';
 import { listInScopeProjects } from '../../src/config/projects.ts';
-import { filterCatalogSlugs, isCatalogSlug, isInScopeSlug } from './classify.ts';
+import {
+	filterCatalogSlugsFrom,
+	isCatalogSlug,
+	isInScopeSlug,
+} from './classify.ts';
 import {
 	runJevJudgment,
 	type FeedbackScore,
@@ -21,11 +25,10 @@ export const JEV_NOUL_THRESHOLD = 0.55;
 
 const INGEST_KEY = 'ingestAsSource';
 
-function catalogProjects() {
-	return listInScopeProjects();
-}
-
-export function buildJevNewsQuestions(): JevQuestions {
+export function buildJevNewsQuestions(catalog?: ProjectConfig[]): JevQuestions {
+	const projects = catalog
+		? catalog.filter((p) => p.role === 'seed' || p.role === 'related')
+		: listInScopeProjects();
 	const questions: JevQuestions = {
 		[INGEST_KEY]: {
 			type: 'noul',
@@ -37,7 +40,7 @@ export function buildJevNewsQuestions(): JevQuestions {
 			},
 		},
 	};
-	for (const p of catalogProjects()) {
+	for (const p of projects) {
 		questions[p.slug] = {
 			type: 'noul',
 			instructions: `Is this news primarily about the catalog project "${p.nameJa}" / "${p.nameEn}" (slug ${p.slug})?`,
@@ -59,11 +62,18 @@ function noulValue(answer: unknown): number | null {
 }
 
 /** Map Jev answers → catalog slugs + ingest gate. Pure; used by classify and tests. */
-export function mapJevNewsAnswers(answers: Record<string, unknown> | null): {
+export function mapJevNewsAnswers(
+	answers: Record<string, unknown> | null,
+	catalog?: ProjectConfig[],
+): {
 	ingestAsSource: boolean;
 	projectSlugs: ProjectSlug[];
 	reason: string;
 } {
+	const projects = catalog
+		? catalog.filter((p) => p.role === 'seed' || p.role === 'related')
+		: listInScopeProjects();
+
 	if (!answers) {
 		return {
 			ingestAsSource: false,
@@ -76,15 +86,18 @@ export function mapJevNewsAnswers(answers: Record<string, unknown> | null): {
 	const ingestAsSource = ingestNoul !== null && ingestNoul >= JEV_NOUL_THRESHOLD;
 
 	const scored: { slug: ProjectSlug; noul: number }[] = [];
-	for (const p of catalogProjects()) {
+	for (const p of projects) {
 		const n = noulValue(answers[p.slug]);
 		if (n === null) continue;
-		if (n >= JEV_NOUL_THRESHOLD && isInScopeSlug(p.slug)) {
-			scored.push({ slug: p.slug, noul: n });
+		if (n >= JEV_NOUL_THRESHOLD && isInScopeSlug(p.slug, catalog)) {
+			scored.push({ slug: p.slug as ProjectSlug, noul: n });
 		}
 	}
 	scored.sort((a, b) => b.noul - a.noul);
-	const projectSlugs = filterCatalogSlugs(scored.map((s) => s.slug));
+	const projectSlugs = filterCatalogSlugsFrom(
+		scored.map((s) => s.slug),
+		catalog ?? projects,
+	);
 
 	const bits = [
 		...(ingestNoul !== null ? [`ingest=${ingestNoul.toFixed(2)}`] : []),
@@ -95,15 +108,18 @@ export function mapJevNewsAnswers(answers: Record<string, unknown> | null): {
 	return { ingestAsSource, projectSlugs, reason: reason.slice(0, 240) };
 }
 
-function scoresForJevNews(answers: unknown | null): FeedbackScore[] {
+function scoresForJevNews(
+	answers: unknown | null,
+	catalog?: ProjectConfig[],
+): FeedbackScore[] {
 	if (!answers || typeof answers !== 'object') {
 		return [
 			{ name: 'schema_ok', value: 0, reason: 'no answers' },
 			{ name: 'slugs_in_catalog', value: 0, reason: 'n/a' },
 		];
 	}
-	const mapped = mapJevNewsAnswers(answers as Record<string, unknown>);
-	const invents = mapped.projectSlugs.some((s) => !isCatalogSlug(s));
+	const mapped = mapJevNewsAnswers(answers as Record<string, unknown>, catalog);
+	const invents = mapped.projectSlugs.some((s) => !isCatalogSlug(s, catalog));
 	return [
 		{ name: 'schema_ok', value: 1 },
 		{
@@ -129,6 +145,7 @@ export async function llmClassifyNewsItem(
 		| 'summaryJa'
 		| 'accountHandle'
 	>,
+	catalog?: ProjectConfig[],
 ): Promise<NewsClassifyResult> {
 	const state = {
 		id: item.id,
@@ -155,12 +172,12 @@ export async function llmClassifyNewsItem(
 			titleOriginal: item.titleOriginal,
 		},
 		state,
-		questions: buildJevNewsQuestions(),
-		score: (_raw, answers) => scoresForJevNews(answers),
+		questions: buildJevNewsQuestions(catalog),
+		score: (_raw, answers) => scoresForJevNews(answers, catalog),
 	});
 
 	const now = new Date().toISOString();
-	const mapped = mapJevNewsAnswers(result.answers);
+	const mapped = mapJevNewsAnswers(result.answers, catalog);
 	return {
 		...mapped,
 		llmClassifiedAt: now,

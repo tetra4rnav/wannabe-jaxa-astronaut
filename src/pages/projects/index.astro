@@ -1,8 +1,17 @@
 ---
 import SiteLayout from '../../layouts/SiteLayout.astro';
 import ProjectsCatalogTable from '../../components/ProjectsCatalogTable.astro';
+import { loadCatalog, listInScopeFrom } from '../../../shared/timeline/catalog';
 
-export const prerender = true;
+export const prerender = false;
+
+let projects = listInScopeFrom(await loadCatalog(null));
+try {
+	const { env } = await import('cloudflare:workers');
+	projects = listInScopeFrom(await loadCatalog(env.DB));
+} catch {
+	/* local without D1 */
+}
 ---
 
 <SiteLayout
@@ -13,5 +22,5 @@ export const prerender = true;
 	<p class="mb-4 text-sm text-muted-foreground">
 		進行中・計画中の有人計画。国・種別は一覧表示用です。
 	</p>
-	<ProjectsCatalogTable />
+	<ProjectsCatalogTable projects={projects} />
 </SiteLayout>

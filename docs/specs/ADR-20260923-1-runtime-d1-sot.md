@@ -16,12 +16,12 @@ Graph RAG already walks catalog relations ([ADR-20260922-3](./ADR-20260922-3-gra
 | Data | Runtime SoT | Seed / transition |
 | --- | --- | --- |
 | Catalog (Project, Relation, display `countries` / `kindJa`) | **D1** `projects` + `project_relations` | TypeScript seed / empty-D1 fallback |
-| News feed (UI list) | **D1** `news_items` | KV `news:file` during migration; local `src/data/news.json` for offline dev |
-| Wiki proposals | **D1** `proposals` | KV `proposals:file` during migration |
+| News feed (UI list) | **D1** `news_items` | One-shot KV→D1 migrate then delete keys; local `src/data/news.json` only when D1 unbound / empty |
+| Wiki proposals | **D1** `proposals` | One-shot KV→D1 migrate then delete key |
 | RAG timeline / ingest | Existing D1 `events` / `documents` + R2 / Vectorize | Unchanged |
 | Fact-check history | KV today; **D1 allowed later** | Not required in [#12](https://github.com/tetra4rnav/wannabe-jaxa-astronaut/issues/12) |
 
-KV remains for transitional fallback and other blobs until news / proposals cut over. Catalog must not use KV as SoT.
+KV remains for **fact-check** blobs only. News / proposals have **no KV fallback in code** after cutover (migrate once, delete `news:file` / `news:md` / `proposals:file`). Catalog must not use KV as SoT.
 
 ### Feed vs RAG boundary
 
@@ -71,7 +71,7 @@ Readers (Site, classify, `expandRetrievalSlugs`) use a **D1 catalog loader** wit
 - [#12](https://github.com/tetra4rnav/wannabe-jaxa-astronaut/issues/12) implements migrations, loaders, Access-backed admin, and news / proposals cutover.
 - [ADR-20260920-1](./ADR-20260920-1-pages-and-worker.md) bindings: D1 becomes primary for catalog + feed + proposals; KV shrinks after cutover.
 - [ADR-20260922-2](./ADR-20260922-2-crewed-project-relations.md) membership rules stay; storage of the catalog moves to D1.
-- Dual-write or read-fallback windows are operator-visible in VER.
+- Cutover is migrate-then-delete (no dual-write / KV read-fallback in shipped code); VER documents the one-shot.
 
 ## Alternatives considered
 

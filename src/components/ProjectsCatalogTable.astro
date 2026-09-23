@@ -13,9 +13,20 @@ import {
 	countryFlag,
 	listInScopeProjects,
 	relationLabelJa,
+	type ProjectConfig,
 } from '../config/projects';
 
-const projects = [...listInScopeProjects()].sort((a, b) => {
+interface Props {
+	projects?: ProjectConfig[];
+}
+
+const { projects: projectsProp } = Astro.props;
+const bySlug = {
+	...PROJECT_BY_SLUG,
+	...Object.fromEntries((projectsProp ?? []).map((p) => [p.slug, p])),
+};
+
+const projects = [...(projectsProp ?? listInScopeProjects())].sort((a, b) => {
 	const byKind = (a.kindJa ?? '').localeCompare(b.kindJa ?? '', 'ja');
 	if (byKind !== 0) return byKind;
 	return a.nameJa.localeCompare(b.nameJa, 'ja');
@@ -65,7 +76,7 @@ const projects = [...listInScopeProjects()].sort((a, b) => {
 								{parents.length > 0 ? (
 									<span class="flex flex-wrap gap-1">
 										{parents.map((r) => {
-											const target = PROJECT_BY_SLUG[r.target];
+											const target = bySlug[r.target];
 											return (
 												<a href={`/projects/${r.target}/`}>
 													{target?.nameJa ?? r.target}
@@ -81,7 +92,7 @@ const projects = [...listInScopeProjects()].sort((a, b) => {
 								{edges.length > 0 ? (
 									<span class="flex flex-wrap gap-1">
 										{edges.map((r) => {
-											const target = PROJECT_BY_SLUG[r.target];
+											const target = bySlug[r.target];
 											return (
 												<Badge variant="outline">
 													{relationLabelJa(r.type)} → {target?.nameJa ?? r.target}

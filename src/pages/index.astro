@@ -4,8 +4,18 @@ import { NewsFeed } from '../components/NewsFeed';
 import ProjectsCatalogTable from '../components/ProjectsCatalogTable.astro';
 import { loadNewsFile } from '../lib/news-store';
 import { SITE_DESCRIPTION, SITE_TITLE } from '../lib/site';
+import { loadCatalog, listInScopeFrom } from '../../shared/timeline/catalog';
+
+export const prerender = false;
 
 const news = await loadNewsFile();
+let projects = listInScopeFrom(await loadCatalog(null));
+try {
+	const { env } = await import('cloudflare:workers');
+	projects = listInScopeFrom(await loadCatalog(env.DB));
+} catch {
+	/* local */
+}
 const HOME_NEWS_LIMIT = 5;
 ---
 
@@ -30,6 +40,6 @@ const HOME_NEWS_LIMIT = 5;
 		<p class="mb-4 text-sm text-muted-foreground">
 			進行中・計画中の公式な計画名。主題ではなくプロジェクト単位です。
 		</p>
-		<ProjectsCatalogTable />
+		<ProjectsCatalogTable projects={projects} />
 	</section>
 </SiteLayout>

@@ -1,3 +1,4 @@
+import { loadCatalog } from './catalog.ts';
 import { embedTexts } from './ingest.ts';
 import { expandRetrievalSlugs } from './project-graph.ts';
 
@@ -15,6 +16,7 @@ type RetrieveEnv = {
 	AI: Ai;
 	VECTORIZE: VectorizeIndex;
 	CHUNKS: R2Bucket;
+	DB?: D1Database;
 };
 
 /**
@@ -35,7 +37,8 @@ export async function retrievePriorChunks(
 	if (!classified.length) return [];
 
 	const classifiedSet = new Set(classified);
-	const projects = expandRetrievalSlugs(classified);
+	const catalog = env.DB ? await loadCatalog(env.DB) : undefined;
+	const projects = expandRetrievalSlugs(classified, catalog ? { catalog } : undefined);
 	if (!projects.length) return [];
 
 	const date = opts.occurredAt.slice(0, 10);
