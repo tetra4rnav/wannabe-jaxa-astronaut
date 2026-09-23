@@ -54,7 +54,7 @@ Source-domain audit runs on every local / CI build via `prebuild`. Scheduled new
 
 Do **not** enable Bot Fight Mode or AI crawler blocking; [`public/robots.txt`](../../public/robots.txt) is allow-all.
 
-Remaining Pages Functions under `functions/` may still serve `/news.md`, `/fact-checks/:id.json`, `/proposals.json` (plus `/proposals/:id.json`), and project timeline JSON when that surface is active. **`/news.json` is served by the Astro SSR app** (KV with bundled `src/data/news.json` fallback). Home (`/`) and `/news/` render news on the server from the same loader.
+Remaining Pages Functions under `functions/` may still serve `/news.md`, `/fact-checks/:id.json`, `/proposals.json` (plus `/proposals/:id.json`), and project timeline JSON when that surface is active. **`/news.json` is served by the Astro SSR app** (KV with bundled `src/data/news.json` fallback). Home (`/`), `/news/`, and `/news/[id]/` render news on the server from the same loader.
 
 Bind on the public app: KV `STORE` → `wannabe-jaxa-store`, D1 `DB` → `wannabe-jaxa-db`.
 
@@ -68,7 +68,7 @@ Bind on the public app: KV `STORE` → `wannabe-jaxa-store`, D1 `DB` → `wannab
 | Manual run | `POST /run` with `Authorization: Bearer $RUN_SECRET` and JSON `{"job":"fetch-news"|"fact-check"|"ingest-corpus"|"propose-wiki"}` |
 | D1 migrate | `npx wrangler d1 migrations apply wannabe-jaxa-db --remote -c worker/wrangler.jsonc` |
 
-Shared pipeline: [`shared/news/`](../../shared/news/) (no filesystem). Timeline ingest / retrieve: [`shared/timeline/`](../../shared/timeline/). Wiki proposals: [`shared/proposals/`](../../shared/proposals/). LLM judgments: [`shared/opik/`](../../shared/opik/). Production news / fact-check / proposals JSON live in KV (`news:file`, `news:md`, `fact-check:{docsId}`, `proposals:file`). D1 holds projects / documents / events; R2 `wannabe-jaxa-chunks` + Vectorize `wannabe-jaxa-vectors` hold embeddings. FetchNews uses Workers AI for project tags + ingest gate, then enqueues ProposeWiki for newly classified items.
+Shared pipeline: [`shared/news/`](../../shared/news/) (no filesystem). Timeline ingest / retrieve: [`shared/timeline/`](../../shared/timeline/). Wiki proposals: [`shared/proposals/`](../../shared/proposals/). LLM judgments: [`shared/opik/`](../../shared/opik/). Production news / fact-check / proposals JSON live in KV (`news:file`, `news:md`, `fact-check:{docsId}`, `proposals:file`). D1 holds projects / documents / events; R2 `wannabe-jaxa-chunks` + Vectorize `wannabe-jaxa-vectors` hold embeddings. FetchNews uses TypeSafe Jev (`typesafe/jev`) for project tags + ingest gate, then enqueues ProposeWiki for newly classified items.
 
 ## Secrets & env
 
@@ -80,7 +80,8 @@ Shared pipeline: [`shared/news/`](../../shared/news/) (no filesystem). Timeline 
 | `DEEPL_API_KEY` | Optional DeepL translation |
 | `CF_ACCOUNT_ID` | Local `npm run fact-check` REST AI (optional) |
 | `CF_API_TOKEN` | Local fact-check REST AI (optional) |
-| `CF_AI_MODEL` | Optional; default `@cf/meta/llama-3.1-8b-instruct` |
+| `CF_AI_MODEL` | Optional; default `@cf/meta/llama-3.1-8b-instruct` (chat judgments) |
+| `CF_JEV_MODEL` | Optional; default `typesafe/jev` (news ingest gate / project tags) |
 
 ### Worker secrets (`wrangler secret put -c worker/wrangler.jsonc`)
 
@@ -88,7 +89,8 @@ Shared pipeline: [`shared/news/`](../../shared/news/) (no filesystem). Timeline 
 | --- | --- |
 | `X_BEARER_TOKEN` | FetchNews X API |
 | `DEEPL_API_KEY` | Optional translation |
-| `CF_AI_MODEL` | Optional Workers AI model override (FetchNews gate + FactCheck + ProposeWiki) |
+| `CF_AI_MODEL` | Optional Workers AI chat model override (FactCheck + ProposeWiki) |
+| `CF_JEV_MODEL` | Optional TypeSafe Jev model override (FetchNews ingest gate + project tags; default `typesafe/jev`) |
 | `RUN_SECRET` | Bearer token for `POST /run` |
 | `OPIK_API_KEY` | Opik Cloud API key (`authorization` header, no `Bearer ` prefix). **Required in production.** |
 | `OPIK_WORKSPACE` | Opik / Comet workspace name (`Comet-Workspace` header). **Required in production.** |
@@ -100,10 +102,10 @@ Workers AI uses the `AI` binding (no account REST token required on the Worker).
 
 | Layer | How |
 | --- | --- |
-| Production traces | Every judgment via `runJudgment` → Opik REST traces/spans; tags `judgment:news-ingest-gate`, `judgment:fact-check`, `judgment:propose-wiki` |
-| Structural scores | Feedback scores `json_valid`, `schema_ok`, `slugs_in_catalog` / `verdict_enum_ok` / `evidence_allowlisted` |
+| Production traces | News gate via `runJevJudgment`; FactCheck / ProposeWiki via `runJudgment` → Opik REST traces/spans; tags `judgment:news-ingest-gate`, `judgment:fact-check`, `judgment:propose-wiki` |
+| Structural scores | Jev: `jev_ok`, `schema_ok`, `slugs_in_catalog`; chat: `json_valid` plus job-specific scores |
 | Online rules | Opik UI → Project → Evaluation Rules: Custom LLM-as-Judge filtered by those tags; map `input` / `output`; sample 100% until cost requires throttling |
-| Offline | `npm run opik:eval` validates fixtures under [`scripts/opik/fixtures/`](../../scripts/opik/fixtures/); with Opik env set, logs a suite summary trace |
+| Offline | `npm run opik:eval` validates fixtures under [`scripts/opik/fixtures/`](../../scripts/opik/fixtures/) (includes `mapJevNewsAnswers` / `jev-news-map.json`); with Opik env set, logs a suite summary trace |
 
 ## Schedules (Cloudflare Workflows)
 

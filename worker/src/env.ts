@@ -11,6 +11,7 @@ export interface Env {
 	X_BEARER_TOKEN?: string;
 	DEEPL_API_KEY?: string;
 	CF_AI_MODEL?: string;
+	CF_JEV_MODEL?: string;
 	RUN_SECRET?: string;
 	OPIK_API_KEY?: string;
 	OPIK_WORKSPACE?: string;

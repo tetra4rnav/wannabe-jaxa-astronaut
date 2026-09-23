@@ -9,6 +9,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PROJECTS } from '../../src/config/projects.ts';
+import { mapJevNewsAnswers } from '../../shared/timeline/llm-classify-news.ts';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const catalog = new Set(PROJECTS.map((p) => p.slug));
@@ -19,6 +20,16 @@ type NewsFixture = {
 		ingestAsSource?: boolean;
 		projectSlugsSubsetOfCatalog?: boolean;
 		preferredProjectsAnyOf?: string[];
+	};
+	assertions: string[];
+};
+
+type JevMapFixture = {
+	id: string;
+	jevAnswers: Record<string, unknown> | null;
+	expect: {
+		ingestAsSource: boolean;
+		projectSlugs: string[];
 	};
 	assertions: string[];
 };
@@ -104,6 +115,36 @@ function validateNewsFixtures(failures: string[]) {
 	return fixtures;
 }
 
+function validateJevMapFixtures(failures: string[]) {
+	const fixtures = loadJson<JevMapFixture[]>('jev-news-map.json');
+	for (const f of fixtures) {
+		assert(Array.isArray(f.assertions) && f.assertions.length > 0, `${f.id}: assertions required`, failures);
+		assert(
+			typeof f.expect.ingestAsSource === 'boolean',
+			`${f.id}: expect.ingestAsSource boolean required`,
+			failures,
+		);
+		assert(Array.isArray(f.expect.projectSlugs), `${f.id}: expect.projectSlugs required`, failures);
+		for (const slug of f.expect.projectSlugs) {
+			assert(catalog.has(slug as never), `${f.id}: expected slug ${slug} not in catalog`, failures);
+		}
+
+		const mapped = mapJevNewsAnswers(f.jevAnswers);
+		assert(
+			mapped.ingestAsSource === f.expect.ingestAsSource,
+			`${f.id}: ingestAsSource got ${mapped.ingestAsSource}, want ${f.expect.ingestAsSource}`,
+			failures,
+		);
+		assert(
+			mapped.projectSlugs.join(',') === f.expect.projectSlugs.join(','),
+			`${f.id}: projectSlugs got [${mapped.projectSlugs.join(',')}], want [${f.expect.projectSlugs.join(',')}]`,
+			failures,
+		);
+	}
+	console.log(`[opik:eval] jev-news-map fixtures: ${fixtures.length} ok (mapJevNewsAnswers)`);
+	return fixtures;
+}
+
 function validateFactFixtures(failures: string[]) {
 	const fixtures = loadJson<FactFixture[]>('fact-check.json');
 	for (const f of fixtures) {
@@ -146,11 +187,16 @@ function validateProposeFixtures(failures: string[]) {
 async function main() {
 	const failures: string[] = [];
 	const news = validateNewsFixtures(failures);
+	const jevMaps = validateJevMapFixtures(failures);
 	const facts = validateFactFixtures(failures);
 	const proposals = validateProposeFixtures(failures);
 	await maybeLogOpikSuite(
 		'news-ingest-gate',
 		news.map((f) => ({ id: f.id, assertions: f.assertions })),
+	);
+	await maybeLogOpikSuite(
+		'jev-news-map',
+		jevMaps.map((f) => ({ id: f.id, assertions: f.assertions })),
 	);
 	await maybeLogOpikSuite(
 		'fact-check',

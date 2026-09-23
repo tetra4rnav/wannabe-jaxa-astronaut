@@ -1,0 +1,72 @@
+[
+	{
+		"id": "map-artemis-ingest",
+		"jevAnswers": {
+			"ingestAsSource": { "type": "noul", "noul": 0.9 },
+			"artemis": { "type": "noul", "noul": 0.88 },
+			"iss-kibo": { "type": "noul", "noul": 0.2 }
+		},
+		"expect": {
+			"ingestAsSource": true,
+			"projectSlugs": ["artemis"]
+		},
+		"assertions": [
+			"noul >= 0.55 on ingestAsSource and artemis maps to ingest true + artemis slug"
+		]
+	},
+	{
+		"id": "map-threshold-inclusive",
+		"jevAnswers": {
+			"ingestAsSource": { "type": "noul", "noul": 0.55 },
+			"htv": { "type": "noul", "noul": 0.55 },
+			"artemis": { "type": "noul", "noul": 0.54 }
+		},
+		"expect": {
+			"ingestAsSource": true,
+			"projectSlugs": ["htv"]
+		},
+		"assertions": [
+			"threshold 0.55 is inclusive; 0.54 must not assign a project"
+		]
+	},
+	{
+		"id": "map-below-threshold",
+		"jevAnswers": {
+			"ingestAsSource": { "type": "noul", "noul": 0.4 },
+			"artemis": { "type": "noul", "noul": 0.3 }
+		},
+		"expect": {
+			"ingestAsSource": false,
+			"projectSlugs": ["unassigned"]
+		},
+		"assertions": [
+			"all noul below 0.55 → ingest false and unassigned"
+		]
+	},
+	{
+		"id": "map-null-answers",
+		"jevAnswers": null,
+		"expect": {
+			"ingestAsSource": false,
+			"projectSlugs": ["unassigned"]
+		},
+		"assertions": [
+			"null answers fail-open to unassigned with ingest false"
+		]
+	},
+	{
+		"id": "map-multi-project-sorted",
+		"jevAnswers": {
+			"ingestAsSource": { "type": "noul", "noul": 0.8 },
+			"gateway": { "type": "noul", "noul": 0.65 },
+			"artemis": { "type": "noul", "noul": 0.7 }
+		},
+		"expect": {
+			"ingestAsSource": true,
+			"projectSlugs": ["artemis", "gateway"]
+		},
+		"assertions": [
+			"multiple catalog hits keep descending noul order"
+		]
+	}
+]

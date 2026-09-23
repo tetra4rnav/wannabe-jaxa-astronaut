@@ -1,10 +1,12 @@
 import type { NewsItem } from '../../src/utils/news-types.ts';
 import type { ProjectSlug } from '../../src/config/projects.ts';
-import { catalogPromptLines, filterCatalogSlugs, isCatalogSlug } from './classify.ts';
+import { PROJECTS } from '../../src/config/projects.ts';
+import { filterCatalogSlugs, isCatalogSlug } from './classify.ts';
 import {
-	runJudgment,
+	runJevJudgment,
 	type FeedbackScore,
 	type JudgmentEnv,
+	type JevQuestions,
 } from '../opik/run-judgment.ts';
 
 export type NewsClassifyResult = {
@@ -14,39 +16,100 @@ export type NewsClassifyResult = {
 	llmClassifiedAt: string;
 };
 
-const SYSTEM = `You classify official-adjacent spaceflight news for an unofficial JAXA astronaut study wiki.
-Reply ONLY with JSON:
-{"ingestAsSource":boolean,"projectSlugs":string[],"reason":string}
+/** noul probability at or above this counts as true / assigned. */
+export const JEV_NOUL_THRESHOLD = 0.55;
 
-Rules:
-- ingestAsSource=true ONLY if the item is news-like (factual update or official announcement) AND trustworthy as official-adjacent evidence for RAG (from the given official feed/X channel, not rumor, opinion, empty stub, or pure retweet noise).
-- projectSlugs: zero or more slugs from the catalog list only. Multi-project OK. If none fit, use ["unassigned"].
-- Never invent project slugs outside the catalog.
-- reason: one short English or Japanese sentence.`;
+const INGEST_KEY = 'ingestAsSource';
 
-function scoresForNews(parsed: unknown | null): FeedbackScore[] {
-	if (!parsed || typeof parsed !== 'object') {
+function catalogProjects() {
+	return PROJECTS.filter((p) => p.slug !== 'unassigned');
+}
+
+export function buildJevNewsQuestions(): JevQuestions {
+	const questions: JevQuestions = {
+		[INGEST_KEY]: {
+			type: 'noul',
+			instructions:
+				'Is this item news-like (a factual update or official announcement) and trustworthy as official-adjacent evidence for a study wiki RAG corpus?',
+			criteria: {
+				true: 'Official or official-adjacent news with concrete facts; suitable as evidence',
+				false: 'Rumor, opinion, empty stub, hub page, vibe post, or not news-like',
+			},
+		},
+	};
+	for (const p of catalogProjects()) {
+		questions[p.slug] = {
+			type: 'noul',
+			instructions: `Is this news primarily about the catalog project "${p.nameJa}" / "${p.nameEn}" (slug ${p.slug})?`,
+			criteria: {
+				true: `Clearly concerns ${p.nameEn} / ${p.nameJa}`,
+				false: `Not about ${p.nameEn} / ${p.nameJa}`,
+			},
+		};
+	}
+	return questions;
+}
+
+function noulValue(answer: unknown): number | null {
+	if (!answer || typeof answer !== 'object') return null;
+	const a = answer as Record<string, unknown>;
+	if (a.type === 'noul' && typeof a.noul === 'number') return a.noul;
+	if (typeof a.noul === 'number') return a.noul;
+	return null;
+}
+
+/** Map Jev answers → catalog slugs + ingest gate. Pure; used by classify and tests. */
+export function mapJevNewsAnswers(answers: Record<string, unknown> | null): {
+	ingestAsSource: boolean;
+	projectSlugs: ProjectSlug[];
+	reason: string;
+} {
+	if (!answers) {
+		return {
+			ingestAsSource: false,
+			projectSlugs: ['unassigned'],
+			reason: 'jev: no answers',
+		};
+	}
+
+	const ingestNoul = noulValue(answers[INGEST_KEY]);
+	const ingestAsSource = ingestNoul !== null && ingestNoul >= JEV_NOUL_THRESHOLD;
+
+	const scored: { slug: ProjectSlug; noul: number }[] = [];
+	for (const p of catalogProjects()) {
+		const n = noulValue(answers[p.slug]);
+		if (n === null) continue;
+		if (n >= JEV_NOUL_THRESHOLD && isCatalogSlug(p.slug)) {
+			scored.push({ slug: p.slug, noul: n });
+		}
+	}
+	scored.sort((a, b) => b.noul - a.noul);
+	const projectSlugs = filterCatalogSlugs(scored.map((s) => s.slug));
+
+	const bits = [
+		...(ingestNoul !== null ? [`ingest=${ingestNoul.toFixed(2)}`] : []),
+		...scored.slice(0, 4).map((s) => `${s.slug}=${s.noul.toFixed(2)}`),
+	];
+	const reason = bits.length ? `jev ${bits.join(' ')}` : 'jev unassigned';
+
+	return { ingestAsSource, projectSlugs, reason: reason.slice(0, 240) };
+}
+
+function scoresForJevNews(answers: unknown | null): FeedbackScore[] {
+	if (!answers || typeof answers !== 'object') {
 		return [
-			{ name: 'schema_ok', value: 0, reason: 'no object' },
+			{ name: 'schema_ok', value: 0, reason: 'no answers' },
 			{ name: 'slugs_in_catalog', value: 0, reason: 'n/a' },
 		];
 	}
-	const o = parsed as Record<string, unknown>;
-	const schemaOk =
-		typeof o.ingestAsSource === 'boolean' &&
-		Array.isArray(o.projectSlugs) &&
-		typeof o.reason === 'string';
-	const filtered = filterCatalogSlugs(o.projectSlugs);
-	const rawSlugs = Array.isArray(o.projectSlugs)
-		? o.projectSlugs.filter((x): x is string => typeof x === 'string')
-		: [];
-	const invents = rawSlugs.some((s) => s !== 'unassigned' && !isCatalogSlug(s));
+	const mapped = mapJevNewsAnswers(answers as Record<string, unknown>);
+	const invents = mapped.projectSlugs.some((s) => !isCatalogSlug(s));
 	return [
-		{ name: 'schema_ok', value: schemaOk ? 1 : 0 },
+		{ name: 'schema_ok', value: 1 },
 		{
 			name: 'slugs_in_catalog',
 			value: invents ? 0 : 1,
-			reason: invents ? `invented: ${rawSlugs.join(',')}` : filtered.join(','),
+			reason: mapped.projectSlugs.join(','),
 		},
 	];
 }
@@ -67,22 +130,20 @@ export async function llmClassifyNewsItem(
 		| 'accountHandle'
 	>,
 ): Promise<NewsClassifyResult> {
-	const catalog = catalogPromptLines();
-	const user = `Catalog projects:
-${catalog}
+	const state = {
+		id: item.id,
+		url: item.url,
+		kind: item.kind,
+		region: item.region,
+		source: item.sourceLabel,
+		accountHandle: item.accountHandle ?? null,
+		titleOriginal: item.titleOriginal,
+		summaryOriginal: item.summaryOriginal,
+		titleJa: item.titleJa,
+		summaryJa: item.summaryJa,
+	};
 
-News item:
-id: ${item.id}
-url: ${item.url}
-kind: ${item.kind}
-region: ${item.region}
-source: ${item.sourceLabel}${item.accountHandle ? ` (@${item.accountHandle})` : ''}
-titleOriginal: ${item.titleOriginal}
-summaryOriginal: ${item.summaryOriginal}
-titleJa: ${item.titleJa}
-summaryJa: ${item.summaryJa}`;
-
-	const result = await runJudgment(env, {
+	const result = await runJevJudgment(env, {
 		name: `news-ingest-gate:${item.id}`,
 		tags: ['judgment:news-ingest-gate'],
 		input: {
@@ -93,25 +154,15 @@ summaryJa: ${item.summaryJa}`;
 			titleJa: item.titleJa,
 			titleOriginal: item.titleOriginal,
 		},
-		system: SYSTEM,
-		user,
-		score: (_raw, parsed) => scoresForNews(parsed),
+		state,
+		questions: buildJevNewsQuestions(),
+		score: (_raw, answers) => scoresForJevNews(answers),
 	});
 
 	const now = new Date().toISOString();
-	if (!result.parsed || typeof result.parsed !== 'object') {
-		return {
-			ingestAsSource: false,
-			projectSlugs: ['unassigned'],
-			reason: 'LLM parse failed',
-			llmClassifiedAt: now,
-		};
-	}
-	const o = result.parsed as Record<string, unknown>;
+	const mapped = mapJevNewsAnswers(result.answers);
 	return {
-		ingestAsSource: o.ingestAsSource === true,
-		projectSlugs: filterCatalogSlugs(o.projectSlugs),
-		reason: typeof o.reason === 'string' ? o.reason.slice(0, 240) : '',
+		...mapped,
 		llmClassifiedAt: now,
 	};
 }
