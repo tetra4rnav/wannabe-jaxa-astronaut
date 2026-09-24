@@ -20,6 +20,20 @@ npx wrangler d1 migrations apply wannabe-jaxa-db --local -c worker/wrangler.json
 
 Migration `0002_runtime_sot.sql` adds catalog columns, `project_relations`, `news_items`, `proposals`.
 
+### Preview D1 (`wannabe-jaxa-db_preview`)
+
+Shared staging DB for Workers Previews (all non-`main` branches). Production `wannabe-jaxa-db` and jobs Worker stay on the production database only.
+
+1. Create once: `npx wrangler d1 create wannabe-jaxa-db_preview` (already provisioned; id in root [`wrangler.jsonc`](../../wrangler.jsonc) `previews.d1_databases` / `preview_database_id`).
+2. Apply schema (uses [`wrangler.preview-migrations.jsonc`](../../wrangler.preview-migrations.jsonc) so jobs/prod config is not used):
+
+```bash
+npx wrangler d1 migrations apply wannabe-jaxa-db_preview --remote -c wrangler.preview-migrations.jsonc
+```
+
+3. Dashboard → public Worker → **Previews Base** bindings: `DB` → `wannabe-jaxa-db_preview`, `STORE` → preview KV (`preview_id` in `wrangler.jsonc`).
+4. Optional Preview variable: `ADMIN_OPEN=1` (never on Production).
+
 ### Cloudflare Access (`/admin`)
 
 1. Zero Trust Access application covering public app path `/admin*`.
@@ -53,8 +67,8 @@ Migration `0002_runtime_sot.sql` adds catalog columns, `project_relations`, `new
 | Cloudflare Access | Protect `/admin*` |
 | `ADMIN_OPEN` | Dev-only admin bypass (`1` / `true`) |
 | `RUN_SECRET` | Jobs Worker `/run` |
-| D1 `DB` | Catalog + news_items + proposals + timeline |
-| KV `STORE` | Fact-check blobs only (after cutover) |
+| D1 `DB` | Catalog + news_items + proposals + timeline (`wannabe-jaxa-db` production; `wannabe-jaxa-db_preview` for Previews) |
+| KV `STORE` | Fact-check blobs only (after cutover); Preview uses `preview_id` namespace |
 
 ## Related
 

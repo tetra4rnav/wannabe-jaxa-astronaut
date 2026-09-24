@@ -1,0 +1,12 @@
+{
+	"name": "wannabe-jaxa-astronaut-preview-migrations",
+	"compatibility_date": "2026-09-20",
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "wannabe-jaxa-db_preview",
+			"database_id": "78a74237-3695-4460-832f-ac45ee1c6c49",
+			"migrations_dir": "worker/migrations"
+		}
+	]
+}
