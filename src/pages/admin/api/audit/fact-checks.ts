@@ -7,7 +7,7 @@ export const prerender = false;
 const KNOWN_PREFIX = 'fact-check:';
 
 export const GET: APIRoute = async (context) => {
-	const denied = assertAdminAccess(context);
+	const denied = await assertAdminAccess(context);
 	if (denied) return denied;
 	const store = await getStore();
 	if (!store) return Response.json({ items: [] });

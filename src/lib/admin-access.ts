@@ -1,27 +1,23 @@
 import type { APIContext } from 'astro';
+import { isOperator, parseAdminEmails } from './operator-access';
+import { getRuntimeEnv } from './auth';
 
-/** Production requires Cloudflare Access JWT; DEV / ADMIN_OPEN bypass. */
-export function assertAdminAccess(context: APIContext | { request: Request }): Response | null {
-	const url = new URL(context.request.url);
-	const isDev = import.meta.env.DEV;
-	let adminOpen = false;
-	try {
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const env = (context as any).locals?.runtime?.env as { ADMIN_OPEN?: string } | undefined;
-		adminOpen = env?.ADMIN_OPEN === '1' || env?.ADMIN_OPEN === 'true';
-	} catch {
-		/* ignore */
-	}
-	if (isDev || adminOpen) return null;
+/** Production requires a Better Auth operator session. ADMIN_OPEN bypasses (never in production). */
+export async function assertAdminAccess(
+	context: APIContext | { request: Request; locals?: App.Locals },
+): Promise<Response | null> {
+	const locals = 'locals' in context ? context.locals : undefined;
+	if (locals?.adminOpen) return null;
 
-	const jwt = context.request.headers.get('Cf-Access-Jwt-Assertion');
-	if (!jwt) {
-		return new Response('Unauthorized — Cloudflare Access required', {
-			status: 401,
-			headers: { 'Content-Type': 'text/plain; charset=utf-8' },
-		});
-	}
-	return null;
+	const user = locals?.user ?? null;
+	const env = await getRuntimeEnv();
+	if (isOperator(user, parseAdminEmails(env?.ADMIN_EMAILS))) return null;
+
+	const message = user ? '権限がありません' : 'ログインが必要です';
+	return new Response(message, {
+		status: user ? 403 : 401,
+		headers: { 'content-type': 'text/plain; charset=utf-8' },
+	});
 }
 
 export async function getDb(): Promise<D1Database | null> {

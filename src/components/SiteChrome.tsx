@@ -9,6 +9,7 @@ type Props = {
 	groups: NavGroup[];
 	/** Pathname, or pathname+search for query-based nav (admin) */
 	currentPath: string;
+	userEmail?: string | null;
 };
 
 function GitHubIcon({ className }: { className?: string }) {
@@ -200,9 +201,10 @@ function NavList({
 	);
 }
 
-export function SiteChrome({ groups, currentPath }: Props) {
+export function SiteChrome({ groups, currentPath, userEmail = null }: Props) {
 	const [open, setOpen] = useState(true);
 	const [mobile, setMobile] = useState(false);
+	const [email, setEmail] = useState<string | null>(userEmail);
 
 	useEffect(() => {
 		const mq = window.matchMedia('(max-width: 767px)');
@@ -222,6 +224,19 @@ export function SiteChrome({ groups, currentPath }: Props) {
 		applyWidth(open, mobile);
 		if (!mobile) writeCookieOpen(open);
 	}, [open, mobile]);
+
+	useEffect(() => {
+		let cancelled = false;
+		fetch('/api/session', { headers: { accept: 'application/json' } })
+			.then((response) => (response.ok ? response.json() : null))
+			.then((data: { email?: string | null } | null) => {
+				if (!cancelled && data) setEmail(data.email ?? null);
+			})
+			.catch(() => {});
+		return () => {
+			cancelled = true;
+		};
+	}, []);
 
 	const toggle = () => setOpen((v) => !v);
 
@@ -246,6 +261,27 @@ export function SiteChrome({ groups, currentPath }: Props) {
 					{SITE_HEADER}
 				</a>
 				<div className="ml-auto flex items-center gap-1">
+					{email ? (
+						<>
+							<span className="max-w-40 truncate px-2 text-xs">{email}</span>
+							<form method="post" action="/logout">
+								<Button
+									type="submit"
+									variant="ghost"
+									className="text-current hover:bg-transparent/10 hover:text-current"
+								>
+									ログアウト
+								</Button>
+							</form>
+						</>
+					) : (
+						<a
+							href="/login"
+							className="inline-flex h-8 items-center rounded-md px-2 text-sm text-current no-underline hover:bg-transparent/10"
+						>
+							ログイン
+						</a>
+					)}
 					<a
 						href={GITHUB_REPO}
 						className="inline-flex size-9 items-center justify-center rounded-md text-current no-underline hover:bg-transparent/10"

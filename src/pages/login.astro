@@ -1,0 +1,50 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import { safeNext } from '../lib/operator-access';
+
+export const prerender = false;
+
+const next = safeNext(Astro.url.searchParams.get('next'));
+const failed = Astro.url.searchParams.get('error') === '1';
+---
+
+<SiteLayout title="ログイン" description="運用者ログイン" skipMdAlternate heading={false} robots="noindex, nofollow">
+	<form method="post" action="/api/session/sign-in" class="mx-auto flex w-full max-w-sm flex-col gap-4">
+		<h1 class="text-2xl font-semibold tracking-tight">ログイン</h1>
+		{
+			failed && (
+				<p class="text-sm text-destructive" role="alert">
+					メールアドレスまたはパスワードが違います。
+				</p>
+			)
+		}
+		<input type="hidden" name="next" value={next} />
+		<label class="flex flex-col gap-1 text-sm">
+			メールアドレス
+			<input
+				type="email"
+				name="email"
+				required
+				autocomplete="username"
+				class="h-9 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+			/>
+		</label>
+		<label class="flex flex-col gap-1 text-sm">
+			パスワード
+			<input
+				type="password"
+				name="password"
+				required
+				minlength="8"
+				autocomplete="current-password"
+				class="h-9 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+			/>
+		</label>
+		<button
+			type="submit"
+			class="inline-flex h-9 items-center justify-center rounded-lg bg-primary px-3 text-sm font-medium text-primary-foreground"
+		>
+			ログイン
+		</button>
+	</form>
+</SiteLayout>

@@ -5,7 +5,7 @@ import { loadCatalog, retireProject } from '../../../../../../../shared/timeline
 export const prerender = false;
 
 export const POST: APIRoute = async (context) => {
-	const denied = assertAdminAccess(context);
+	const denied = await assertAdminAccess(context);
 	if (denied) return denied;
 	const db = await getDb();
 	if (!db) return new Response('DB unavailable', { status: 503 });

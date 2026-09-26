@@ -29,13 +29,14 @@ Filename: `{REQ|ADR|VER}-{YYYYMMDD}-{N}-{slug}.md`. Templates: [`specs/_template
 | [ADR-20260922-2](./specs/ADR-20260922-2-crewed-project-relations.md) | Crewed catalog and relations |
 | [ADR-20260922-3](./specs/ADR-20260922-3-graph-rag.md) | Graph RAG (relation expansion) |
 | [ADR-20260923-1](./specs/ADR-20260923-1-runtime-d1-sot.md) | Runtime D1 source of truth (catalog, news, proposals) |
+| [ADR-20260925-1](./specs/ADR-20260925-1-better-auth.md) | Better Auth operator login |
 | [ADR-20260920-1](./specs/ADR-20260920-1-pages-and-worker.md) | Pages and Worker |
 | [ADR-20260920-2](./specs/ADR-20260920-2-project-timeline-rag.md) | Project-timeline RAG |
 | [ADR-20260920-3](./specs/ADR-20260920-3-source-policy.md) | Source policy (lists in `src/config/`) |
 | [ADR-20260920-4](./specs/ADR-20260920-4-astro-shadcn-ui.md) | Astro + shadcn UI |
 | [ADR-20260922-1](./specs/ADR-20260922-1-news-detail-and-jev.md) | News detail and TypeSafe Jev |
 | [VER-20260920-1](./specs/VER-20260920-1-operations.md) | Operations runbook |
-| [VER-20260923-1](./specs/VER-20260923-1-admin-and-d1.md) | Admin Access and D1 catalog / feed stores |
+| [VER-20260923-1](./specs/VER-20260923-1-admin-and-d1.md) | Admin auth and D1 catalog / feed stores |
 
 **REQ** = behavior. **ADR** = architecture decision. **VER** = verification / operations.
 

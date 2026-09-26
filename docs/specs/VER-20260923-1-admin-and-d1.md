@@ -1,11 +1,11 @@
-# VER-20260923-1 — Admin Access and D1 catalog / feed stores
+# VER-20260923-1 — Admin auth and D1 catalog / feed stores
 
 **Status:** current  
 **Date:** 2026-09-23
 
 ## Scope
 
-Operator checklist for Cloudflare Access on `/admin`, D1 catalog bootstrap, and KV → D1 cutover for news and proposals. Complements [VER-20260920-1-operations.md](./VER-20260920-1-operations.md). No secret values in this file.
+Operator checklist for Better Auth on `/admin`, D1 catalog bootstrap, and KV → D1 cutover for news and proposals. Complements [VER-20260920-1-operations.md](./VER-20260920-1-operations.md). No secret values in this file. Auth decision: [ADR-20260925-1](./ADR-20260925-1-better-auth.md).
 
 Implementation: [#12](https://github.com/tetra4rnav/wannabe-jaxa-astronaut/issues/12).
 
@@ -34,12 +34,24 @@ npx wrangler d1 migrations apply wannabe-jaxa-db_preview --remote -c wrangler.pr
 3. Dashboard → public Worker → **Previews Base** bindings: `DB` → `wannabe-jaxa-db_preview`, `STORE` → preview KV (`preview_id` in `wrangler.jsonc`).
 4. Optional Preview variable: `ADMIN_OPEN=1` (never on Production).
 
-### Cloudflare Access (`/admin`)
+### Better Auth (`/admin`)
 
-1. Zero Trust Access application covering public app path `/admin*`.
-2. Allow only operator IdPs / emails.
-3. Public routes stay open. Jobs `/run` stays `RUN_SECRET`.
-4. Optional local bypass: `ADMIN_OPEN=1` on the public Worker env (never in production).
+Public pages stay open. `/login` is the operator sign-in page. There is no public registration page.
+
+1. On the **public** Worker only, set secrets `BETTER_AUTH_SECRET` and `BOOTSTRAP_SECRET` (`wrangler secret put`). Set variables `BETTER_AUTH_URL` (canonical origin) and `ADMIN_EMAILS` (comma-separated operator emails). Do not set these on the jobs Worker.
+2. Local: put the same names in gitignored `.dev.vars`. `astro dev` does not skip the session check.
+3. Create or reset an operator (email must be in `ADMIN_EMAILS`):
+
+```bash
+curl -sS -X POST "$ORIGIN/api/operator/accounts" \
+  -H "Authorization: Bearer $BOOTSTRAP_SECRET" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"operator@example.com","password":"...","name":"Operator"}'
+```
+
+4. Sign in at `/login`, then open `/admin/?section=catalog`. Jobs `/run` stays `RUN_SECRET`.
+5. Optional bypass: `ADMIN_OPEN=1` on the public Worker (never in production).
+6. After this build is deployed and `/login` works, delete the Cloudflare Access application `wannabe-jaxa-astronaut` (id `73ca6ca5-7a57-4beb-9ed8-07ec64e568a6`, destination `wannabe-jaxa-astronaut.diaphana.io/admin*`). Do not delete the reusable email policy or any other Access application. Confirm `/admin` no longer shows the Access login screen.
 
 ### D1 catalog bootstrap
 
@@ -64,14 +76,18 @@ npx wrangler d1 migrations apply wannabe-jaxa-db_preview --remote -c wrangler.pr
 
 | Name | Use |
 | --- | --- |
-| Cloudflare Access | Protect `/admin*` |
-| `ADMIN_OPEN` | Dev-only admin bypass (`1` / `true`) |
+| `BETTER_AUTH_SECRET` | Public Worker session signing |
+| `BETTER_AUTH_URL` | Canonical origin for auth cookies |
+| `ADMIN_EMAILS` | Comma-separated operator emails allowed into `/admin` |
+| `BOOTSTRAP_SECRET` | Bearer token for `POST /api/operator/accounts` |
+| `ADMIN_OPEN` | Explicit admin bypass (`1` / `true`); never in production |
 | `RUN_SECRET` | Jobs Worker `/run` |
-| D1 `DB` | Catalog + news_items + proposals + timeline (`wannabe-jaxa-db` production; `wannabe-jaxa-db_preview` for Previews) |
+| D1 `DB` | Catalog + news_items + proposals + timeline + auth tables (`wannabe-jaxa-db` production; `wannabe-jaxa-db_preview` for Previews) |
 | KV `STORE` | Fact-check blobs only (after cutover); Preview uses `preview_id` namespace |
 
 ## Related
 
+- [ADR-20260925-1-better-auth.md](./ADR-20260925-1-better-auth.md)
 - [REQ-20260923-1-admin-runtime-sot.md](./REQ-20260923-1-admin-runtime-sot.md)
 - [ADR-20260923-1-runtime-d1-sot.md](./ADR-20260923-1-runtime-d1-sot.md)
 - [VER-20260920-1-operations.md](./VER-20260920-1-operations.md)

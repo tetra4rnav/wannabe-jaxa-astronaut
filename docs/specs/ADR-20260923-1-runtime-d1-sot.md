@@ -35,7 +35,7 @@ Do **not** conflate `news_items` (feed) with `events` (timeline / RAG).
 
 ### Admin and auth
 
-- Admin UI and admin write APIs live under `/admin/*`, protected by **Cloudflare Access**.
+- Admin UI and admin write APIs live under `/admin/*`, protected by a **Better Auth** operator session ([ADR-20260925-1](./ADR-20260925-1-better-auth.md)). This supersedes the earlier Cloudflare Access gate.
 - Catalog CRUD (Project, Relation, display fields) is the primary admin job. Manual edit of news / proposals in admin is not required; jobs write, Site reads D1.
 - Jobs Worker `RUN_SECRET` stays separate (cron / manual workflow trigger only).
 
@@ -68,7 +68,7 @@ Readers (Site, classify, `expandRetrievalSlugs`) use a **D1 catalog loader** wit
 
 ## Consequences
 
-- [#12](https://github.com/tetra4rnav/wannabe-jaxa-astronaut/issues/12) implements migrations, loaders, Access-backed admin, and news / proposals cutover.
+- [#12](https://github.com/tetra4rnav/wannabe-jaxa-astronaut/issues/12) implements migrations, loaders, admin, and news / proposals cutover. Admin auth moved from Cloudflare Access to Better Auth in [ADR-20260925-1](./ADR-20260925-1-better-auth.md).
 - [ADR-20260920-1](./ADR-20260920-1-pages-and-worker.md) bindings: D1 becomes primary for catalog + feed + proposals; KV shrinks after cutover.
 - [ADR-20260922-2](./ADR-20260922-2-crewed-project-relations.md) membership rules stay; storage of the catalog moves to D1.
 - Cutover is migrate-then-delete (no dual-write / KV read-fallback in shipped code); VER documents the one-shot.
@@ -78,10 +78,11 @@ Readers (Site, classify, `expandRetrievalSlugs`) use a **D1 catalog loader** wit
 - Keep TypeScript as catalog SoT and admin only opens PRs — rejected; operators need deploy-free updates.
 - Put catalog in KV JSON — rejected; relations need structured queries and match D1 timeline already present.
 - Merge feed news into `events` only — rejected; feed retention / UI shape differs from RAG timeline events.
-- Cloudflare Access replaced by app-level passwords — rejected; Access fits Pages / Workers edge auth.
+- Cloudflare Access for `/admin` — superseded by [ADR-20260925-1](./ADR-20260925-1-better-auth.md). The original choice was edge Access rather than app passwords; operator login now uses Better Auth.
 
 ## Related
 
+- [ADR-20260925-1-better-auth.md](./ADR-20260925-1-better-auth.md)
 - [REQ-20260923-1-admin-runtime-sot.md](./REQ-20260923-1-admin-runtime-sot.md)
 - [VER-20260923-1-admin-and-d1.md](./VER-20260923-1-admin-and-d1.md)
 - [ADR-20260922-3-graph-rag.md](./ADR-20260922-3-graph-rag.md)

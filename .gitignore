@@ -30,6 +30,7 @@ temp/
 .env
 .env.*
 !.env.example
+.dev.vars
 
 # OS
 .DS_Store

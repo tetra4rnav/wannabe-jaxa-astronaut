@@ -14,7 +14,8 @@
 			"binding": "DB",
 			"database_name": "wannabe-jaxa-db",
 			"database_id": "4f5ba07d-18bc-49c4-a664-95ab92206770",
-			"preview_database_id": "78a74237-3695-4460-832f-ac45ee1c6c49"
+			"preview_database_id": "78a74237-3695-4460-832f-ac45ee1c6c49",
+			"migrations_dir": "worker/migrations"
 		}
 	],
 	"previews": {
